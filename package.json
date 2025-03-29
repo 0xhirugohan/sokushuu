@@ -4,6 +4,12 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "app:dev": "bun run --filter sokushuu-app dev",
+    "app:build": "bun run --filter sokushuu-app build",
+    "app:lint": "bun run --filter sokushuu-app lint",
+    "app:preview": "bun run --filter sokushuu-app preview"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   }
