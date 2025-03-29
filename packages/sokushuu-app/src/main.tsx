@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router'
 
 import './index.css'
-import App from './App.tsx'
+import { Home } from '@/pages/Home'
+import { Layout } from '@/components/layout'
 
 function getOrSetRootElement(): HTMLElement {
   if (!document.getElementById('root')) {
@@ -18,7 +19,7 @@ function getOrSetRootElement(): HTMLElement {
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: <Home />,
   }
 ]);
 
@@ -26,6 +27,8 @@ const root = getOrSetRootElement();
 
 createRoot(root).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <Layout>
+      <RouterProvider router={router} />
+    </Layout>
   </StrictMode>,
 )
