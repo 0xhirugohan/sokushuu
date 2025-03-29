@@ -11,6 +11,7 @@
     "app:preview": "bun run --filter sokushuu-app preview"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@types/bun": "latest"
   }
 }
