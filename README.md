@@ -18,3 +18,7 @@ learning can be done anywhere and anytime
 ## Ask AI
 
 ![ask ai](./assets/ask-ai.svg)
+
+## References
+
+- Icons by [lucide](https://lucide.dev/icons/)

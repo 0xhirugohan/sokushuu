@@ -1,0 +1,17 @@
+{
+  "name": "sokushuu",
+  "version": "0.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "app:dev": "bun run --filter sokushuu-app dev",
+    "app:build": "bun run --filter sokushuu-app build",
+    "app:lint": "bun run --filter sokushuu-app lint",
+    "app:preview": "bun run --filter sokushuu-app preview"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/bun": "latest"
+  }
+}
