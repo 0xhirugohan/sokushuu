@@ -6,7 +6,7 @@ import WalletIcon from '@/assets/wallet.svg'
 import { Button } from '@/components/ui/button'
 
 const Sidebar = ({ styleName }: { styleName?: string }) => {
-    return <div className={styleName + " " + "w-28 h-full border-2 border-zinc-600 rounded-md p-2"}>
+    return <div className={`${styleName} w-28 h-full border-2 border-zinc-600 rounded-md p-2`}>
         <div className="h-full flex flex-col gap-y-12 justify-between items-center">
             <div className="flex flex-col gap-y-12 justify-center items-center">
                 <img className="border-b-2 border-zinc-600" src={SokushuuLogo} alt="Sokushuu Logo" />
