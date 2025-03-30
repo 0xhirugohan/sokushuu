@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: "Virgil";
+  src: url("https://excalidraw.nyc3.cdn.digitaloceanspaces.com/fonts/Virgil.woff2") format("woff");
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -38,6 +43,10 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
 
   background-color: var(--color-zinc-100);
+}
+
+body {
+  font-family: "Virgil", sans-serif;
 }
 
 .dark {

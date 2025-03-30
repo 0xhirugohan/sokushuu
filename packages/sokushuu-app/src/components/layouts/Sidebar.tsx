@@ -4,7 +4,6 @@ import MarketIcon from '@/assets/market.svg'
 import AiIcon from '@/assets/ai.svg'
 import AiChatIcon from '@/assets/ai-chat.svg'
 import WalletIcon from '@/assets/wallet.svg'
-import { Button } from '@/components/ui/button'
 
 const Sidebar = ({ toggleAIChat, isAIChatOpen, styleName }: { toggleAIChat: () => void, isAIChatOpen: boolean, styleName?: string }) => {
     return <div className={`${styleName} w-28 h-full border-2 border-zinc-600 rounded-md p-2`}>
@@ -17,13 +16,13 @@ const Sidebar = ({ toggleAIChat, isAIChatOpen, styleName }: { toggleAIChat: () =
                 <a href="/market">
                     <img className="w-8 h-8 hover:opacity-70" src={MarketIcon} alt="Market Icon" />
                 </a>
-                <Button onClick={toggleAIChat} className="bg-transparent border-none hover:bg-transparent shadow-none cursor-pointer">
+                <button onClick={toggleAIChat} className="bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
                     <img className="w-8 h-8 hover:opacity-70" src={isAIChatOpen ? AiChatIcon : AiIcon} alt="Ai Icon" />
-                </Button>
+                </button>
             </div>
-            <Button className="mb-4 bg-transparent border-none hover:bg-transparent shadow-none cursor-pointer">
+            <button className="mb-4 bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
                 <img className="w-8 h-8 hover:opacity-70" src={WalletIcon} alt="Wallet Icon" />
-            </Button>
+            </button>
         </div>
     </div>
 };
