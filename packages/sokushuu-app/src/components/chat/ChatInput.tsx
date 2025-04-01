@@ -2,15 +2,25 @@ import { useState } from "react";
 
 import { Textarea } from "@/components/ui/textarea";
 import SendChatIcon from "@/assets/send-chat.svg";
+import { generateContent } from "@/lib/gemini";
+import { IChatHistory } from "@/components/layouts/ChatMenu";
 
-const ChatInput = ({ className }: { className?: string }) => {
+const ChatInput = ({ className, onMessageSent }: { className?: string, onMessageSent: (messages: IChatHistory[]) => void }) => {
     const [message, setMessage] = useState("");
 
     const onMessageTyping = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setMessage(e.target.value);
     }
 
-    const sendMessage = () => {
+    const sendMessage = async () => {
+        const newMessages: IChatHistory[] = [{message, isUser: true}];
+        const response = await generateContent(message);
+        for (const candidate of response.candidates) {
+            for (const part of candidate.content.parts) {
+                newMessages.push({message: part.text, isUser: false});
+            }
+        }
+        onMessageSent(newMessages);
         setMessage("");
     }
 
