@@ -26,17 +26,13 @@ interface GenerateContentResponse {
 }
 
 const generateContent = async (content: string) : Promise<GenerateContentResponse> => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY
-    console.log(apiKey)
+    const apiUrl = import.meta.env.VITE_API_URL
     const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `${apiUrl}/llm/generate`,
         {
             method: "POST",
             body: JSON.stringify({
-                system_instruction: {
-                    parts: [{ text: "You are Shu, a helpful assistant of Sokushuu that can answer questions, help people study, and help people create flashcards to study." }]
-                },
-                contents: [{ parts: [{ text: content }] }],
+                content
             })
         }
     )
