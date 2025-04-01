@@ -5,12 +5,13 @@ import { useState } from "react";
 interface IChatHistory {
     message: string;
     isUser: boolean;
+    timestamp: string;
 }
 
 const ChatMenu = ({ className }: { className?: string }) => {
     const [chatHistories, setChatHistories] = useState<IChatHistory[]>([]);
 
-    const handleMessageSent = (messages: {message: string, isUser: boolean}[]) => {
+    const handleMessageSent = (messages: IChatHistory[]) => {
         const newChatHistories = [...chatHistories, ...messages];
         setChatHistories(newChatHistories);
     }

@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import SendChatIcon from "@/assets/send-chat.svg";
 import { generateContent } from "@/lib/gemini";
-import { IChatHistory } from "@/components/layouts/ChatMenu";
+
+import type { IChatHistory } from "@/components/layouts/ChatMenu";
 
 const ChatInput = ({ className, onMessageSent }: { className?: string, onMessageSent: (messages: IChatHistory[]) => void }) => {
     const [message, setMessage] = useState("");
@@ -13,11 +14,11 @@ const ChatInput = ({ className, onMessageSent }: { className?: string, onMessage
     }
 
     const sendMessage = async () => {
-        const newMessages: IChatHistory[] = [{message, isUser: true}];
+        const newMessages: IChatHistory[] = [{message, isUser: true, timestamp: new Date().toISOString()}];
         const response = await generateContent(message);
         for (const candidate of response.candidates) {
             for (const part of candidate.content.parts) {
-                newMessages.push({message: part.text, isUser: false});
+                newMessages.push({message: part.text, isUser: false, timestamp: new Date().toISOString()});
             }
         }
         onMessageSent(newMessages);

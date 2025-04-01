@@ -16,11 +16,11 @@ const Sidebar = ({ toggleAIChat, isAIChatOpen, styleName }: { toggleAIChat: () =
                 <a href="/market">
                     <img className="w-8 h-8 hover:opacity-70" src={MarketIcon} alt="Market Icon" />
                 </a>
-                <button onClick={toggleAIChat} className="bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
+                <button type="button" onClick={toggleAIChat} className="bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
                     <img className="w-8 h-8 hover:opacity-70" src={isAIChatOpen ? AiChatIcon : AiIcon} alt="Ai Icon" />
                 </button>
             </div>
-            <button className="mb-4 bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
+            <button type="button" className="mb-4 bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
                 <img className="w-8 h-8 hover:opacity-70" src={WalletIcon} alt="Wallet Icon" />
             </button>
         </div>
