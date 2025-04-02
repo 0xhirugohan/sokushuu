@@ -10,6 +10,7 @@ import type { IChatHistory } from "@/components/layouts/ChatMenu";
 const ChatInput = ({ className, onMessageSent }: { className?: string, onMessageSent: (messages: IChatHistory[]) => void }) => {
     const [message, setMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const onMessageTyping = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setMessage(e.target.value);
@@ -18,34 +19,62 @@ const ChatInput = ({ className, onMessageSent }: { className?: string, onMessage
     const sendMessage = async () => {
         if (isLoading) return;
 
-        setIsLoading(true);
-        const newMessages: IChatHistory[] = [{message, isUser: true, timestamp: new Date().toISOString()}];
-        const response = await generateContent(message);
-        for (const candidate of response.candidates) {
-            for (const part of candidate.content.parts) {
-                newMessages.push({message: part.text, isUser: false, timestamp: new Date().toISOString()});
+        try {
+            setIsLoading(true);
+            const newMessages: IChatHistory[] = [{message, isUser: true, timestamp: new Date().toISOString()}];
+            const response = await generateContent(message);
+            for (const candidate of response.candidates) {
+                for (const part of candidate.content.parts) {
+                    newMessages.push({message: part.text, isUser: false, timestamp: new Date().toISOString()});
+                }
             }
+            onMessageSent(newMessages);
+            setMessage("");
+            setIsLoading(false);
+        } catch (error) {
+            if (error instanceof Error) {
+                if (error.message.includes('NetworkError')) {
+                    setErrorMessage('Unable to connect to the server. Please try again later or contact support.');
+                } else {
+                    setErrorMessage('Something went wrong. Please try again later or contact support.');
+                }
+            } else {
+                setErrorMessage('Something went wrong. Please try again later or contact support.');
+            }
+
+            setIsLoading(false);
         }
-        onMessageSent(newMessages);
-        setMessage("");
-        setIsLoading(false);
     }
 
     const handleKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !e.shiftKey) {
             sendMessage();
         }
     }
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (errorMessage) {
+            setErrorMessage("");
+        }
+
+        if (e.key === "Enter") {
+            e.preventDefault();
+        }
+    }
+
     return <div className={`${className} flex`}>
-        <Textarea
-            disabled={isLoading}
-            onKeyUp={handleKeyUp}
-            onChange={onMessageTyping}
-            value={message}
-            className="w-full min-h-28 max-h-60 resize-none border-2 border-zinc-600"
-            placeholder="How can I help you today?"
-        />
+        <div className="w-full">
+            { errorMessage && <div className="mb-2 text-red-500 bg-zinc-100 rounded-md p-2 border-2 border-red-400">{errorMessage}</div> }
+            <Textarea
+                disabled={isLoading}
+                onKeyUp={handleKeyUp}
+                onKeyDown={handleKeyDown}
+                onChange={onMessageTyping}
+                value={message}
+                className="w-full min-h-28 max-h-60 resize-none border-2 border-zinc-600"
+                placeholder="How can I help you today?"
+            />
+        </div>
         <button onClick={sendMessage} type="button" className="p-2 flex items-end justify-end cursor-pointer hover:opacity-60">
             {isLoading ? <img className="animate-spin" src={LoadingIcon} alt="loading" /> : <img src={SendChatIcon} alt="send chat" />}
         </button>
