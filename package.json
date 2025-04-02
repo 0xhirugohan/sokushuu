@@ -8,7 +8,8 @@
     "app:dev": "bun run --filter sokushuu-app dev",
     "app:build": "bun run --filter sokushuu-app build",
     "app:lint": "bun run --filter sokushuu-app lint",
-    "app:preview": "bun run --filter sokushuu-app preview"
+    "app:preview": "bun run --filter sokushuu-app preview",
+    "api:dev": "bun run --filter sokushuu-api dev"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
