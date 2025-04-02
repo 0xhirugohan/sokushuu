@@ -27,4 +27,24 @@ const Sidebar = ({ toggleAIChat, isAIChatOpen, styleName }: { toggleAIChat: () =
     </div>
 };
 
-export { Sidebar };
+const Navbar = ({ styleName }: { styleName?: string }) => {
+    return <div className={`${styleName} bg-zinc-100 h-12 border-2 border-zinc-600 rounded-md p-2 flex justify-around items-center`}>
+        <a href="/">
+            <img className="w-6 h-6 hover:opacity-70" src={FlashcardIcon} alt="Flashcard Icon" />
+        </a>
+        <a href="/market">
+            <img className="w-6 h-6 hover:opacity-70" src={MarketIcon} alt="Market Icon" />
+        </a>
+        <a className="border-2 border-zinc-600 rounded-full bg-zinc-100" href="/">
+            <img className="w-12 h-12 hover:opacity-70 " src={SokushuuLogo} alt="Sokushuu Logo" />
+        </a>
+        <a href="/ai">
+            <img className="w-6 h-6 hover:opacity-70" src={AiIcon} alt="Ai Icon" />
+        </a>
+        <button type="button" className="bg-transparent">
+            <img className="w-6 h-6 hover:opacity-70" src={WalletIcon} alt="Wallet Icon" />
+        </button>
+    </div>
+}
+
+export { Sidebar, Navbar };
