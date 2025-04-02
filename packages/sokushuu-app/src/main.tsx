@@ -5,6 +5,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 import './index.css'
 import { Home } from '@/pages/Home'
 import { Ai } from '@/pages/Ai'
+import { Market } from '@/pages/Market'
 import { Layout } from '@/components/layout'
 
 function getOrSetRootElement(): HTMLElement {
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
   {
     path: '/ai',
     element: <Ai />,
+  },
+  {
+    path: '/market',
+    element: <Market />,
   },
   {
     path: '*',
