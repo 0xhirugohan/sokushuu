@@ -63,7 +63,7 @@ const ChatInput = ({ className, onMessageSent }: { className?: string, onMessage
     }
 
     return <div className={`${className} flex`}>
-        <div className="w-full">
+        <div className="w-full bg-zinc-100">
             { errorMessage && <div className="mb-2 text-red-500 bg-zinc-100 rounded-md p-2 border-2 border-red-400">{errorMessage}</div> }
             <Textarea
                 disabled={isLoading}
