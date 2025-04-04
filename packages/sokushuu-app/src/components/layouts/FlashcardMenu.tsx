@@ -4,7 +4,7 @@ import PlusIcon from "@/assets/plus.svg";
 const FlashcardMenu = ({ styleName }: { styleName?: string }) => {
     return <div className={`${styleName} p-4 w-full h-full flex flex-col gap-y-4 overflow-x-hidden`}>
         <div className="flex justify-between">
-            <div className="text-lg">What do you want to learn today?</div>
+            <div className="text-sm md:text-lg my-auto">What do you want to learn today?</div>
             <button type="button" className="cursor-pointer">
                 <img className="p-1 w-8 h-8" src={SearchIcon} alt="search" />
             </button>
