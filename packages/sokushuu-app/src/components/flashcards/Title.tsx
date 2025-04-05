@@ -37,7 +37,11 @@ const SearchInput = ({ setToggleOff, setSearchQuery, searchQuery, onSubmit }: { 
     </div>
 }
 
-const Title: React.FC = () => {
+interface TitleProps {
+    searchQueryProps?: string;
+}
+
+const Title: React.FC<TitleProps> = ({ searchQueryProps }: TitleProps) => {
     const navigate = useNavigate();
 
     const [toggleSearch, setToggleSearch] = useState(false);
@@ -60,10 +64,12 @@ const Title: React.FC = () => {
     return <div className="flex justify-between">
         {toggleSearch ? <SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} setToggleOff={toggleSearchOff} onSubmit={navigateToSearch} /> : 
         <>
-            <div className="text-sm md:text-lg my-auto">What do you want to learn today?</div>
-                <button onClick={toggleSearchOn} type="button" className="cursor-pointer">
-                    <img className="p-1 w-8 h-8" src={SearchIcon} alt="search" />
-                </button>
+            <div className="text-sm md:text-lg my-auto">
+                {searchQueryProps ? `Search on '${searchQueryProps}'` : "What do you want to learn today?"}
+            </div>
+            <button onClick={toggleSearchOn} type="button" className="cursor-pointer">
+                <img className="p-1 w-8 h-8" src={SearchIcon} alt="search" />
+            </button>
         </>
         }
     </div>
