@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router'
+import { createBrowserRouter, BrowserRouter, Routes, Route, RouterProvider } from 'react-router'
 
 import './index.css'
 import { Home } from '@/pages/Home'
@@ -46,8 +46,21 @@ const root = getOrSetRootElement();
 
 createRoot(root).render(
   <StrictMode>
+    {/*
     <Layout>
       <RouterProvider router={router} />
     </Layout>
+    */}
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="ai" element={<Ai />} />
+          <Route path="market" element={<Market />} />
+          <Route path="search" element={<Search />} />
+          <Route path="*" element={<div>404</div>} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   </StrictMode>,
 )
