@@ -77,9 +77,10 @@ const Title: React.FC<TitleProps> = ({ searchQueryProps, collectionSlugProps }: 
             <div className="text-sm md:text-lg my-auto">
                 {titleText}
             </div>
-            <button onClick={toggleSearchOn} type="button" className="cursor-pointer">
+            { !collectionSlugProps && <button onClick={toggleSearchOn} type="button" className="cursor-pointer">
                 <img className="p-1 w-8 h-8" src={SearchIcon} alt="search" />
             </button>
+            }
         </>
         }
     </div>

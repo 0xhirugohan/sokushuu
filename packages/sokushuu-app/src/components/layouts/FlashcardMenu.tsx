@@ -28,7 +28,7 @@ const FlashcardMenu: React.FC<FlashcardMenuProps> = ({ styleName, searchQueryPro
         { collectionSlug && <Title collectionSlugProps={collectionSlug} /> }
         { !searchQueryProps && !collectionSlug && <Title /> }
 
-        { searchQueryProps || collectionSlug ? <AllContentCard /> : <HomeContent showCreateCollectionPopup={showCreateCollectionPopup} /> }
+        { searchQueryProps || collectionSlug ? <AllContentCard collectionSlug={collectionSlug} /> : <HomeContent showCreateCollectionPopup={showCreateCollectionPopup} /> }
         { isCreateCollectionPopupOpen && <CreateCollectionPopup onClose={closeCreateCollectionPopup} /> }
     </div>
 }
