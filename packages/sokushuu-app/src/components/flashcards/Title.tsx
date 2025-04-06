@@ -39,9 +39,10 @@ const SearchInput = ({ setToggleOff, setSearchQuery, searchQuery, onSubmit }: { 
 
 interface TitleProps {
     searchQueryProps?: string;
+    collectionSlugProps?: string;
 }
 
-const Title: React.FC<TitleProps> = ({ searchQueryProps }: TitleProps) => {
+const Title: React.FC<TitleProps> = ({ searchQueryProps, collectionSlugProps }: TitleProps) => {
     const navigate = useNavigate();
 
     const [toggleSearch, setToggleSearch] = useState(false);
@@ -61,11 +62,20 @@ const Title: React.FC<TitleProps> = ({ searchQueryProps }: TitleProps) => {
         navigate(`/search?query=${searchQuery}`);
     }
 
+    let titleText = 'What do you want to learn today?';
+    if (searchQueryProps) {
+        titleText = `Search on '${searchQueryProps}'`;
+    }
+
+    if (collectionSlugProps) {
+        titleText = collectionSlugProps;
+    }
+
     return <div className="flex justify-between">
         {toggleSearch ? <SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} setToggleOff={toggleSearchOff} onSubmit={navigateToSearch} /> : 
         <>
             <div className="text-sm md:text-lg my-auto">
-                {searchQueryProps ? `Search on '${searchQueryProps}'` : "What do you want to learn today?"}
+                {titleText}
             </div>
             <button onClick={toggleSearchOn} type="button" className="cursor-pointer">
                 <img className="p-1 w-8 h-8" src={SearchIcon} alt="search" />
