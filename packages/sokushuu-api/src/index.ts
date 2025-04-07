@@ -1,4 +1,5 @@
 import { Elysia, t } from "elysia";
+import { cors } from "@elysiajs/cors";
 
 const llm = new Elysia({ prefix: "/llm" })
   .post("/generate", async ({ body }) => {
@@ -31,6 +32,11 @@ const llm = new Elysia({ prefix: "/llm" })
   });
 
 const app = new Elysia()
+  .use(cors({
+    origin: ['http://localhost:5173'],
+    methods: ['POST', 'OPTIONS'],
+    credentials: true,
+  }))
   .get("/", () => "Hello Elysia")
   .use(llm)
   .listen(3000);
