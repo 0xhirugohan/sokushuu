@@ -31,6 +31,9 @@ const generateContent = async (content: string) : Promise<GenerateContentRespons
         `${apiUrl}/llm/generate`,
         {
             method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
             body: JSON.stringify({
                 content
             })
