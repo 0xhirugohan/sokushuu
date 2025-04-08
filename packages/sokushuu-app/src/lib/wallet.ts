@@ -4,7 +4,7 @@ import { educhainTestnet } from './chain';
 
 export const walletClient = createWalletClient({
     chain: educhainTestnet,
-    transport: custom(window.ethereum!),
+    transport: custom(window.ethereum),
 });
 
 export const publicClient = createPublicClient({

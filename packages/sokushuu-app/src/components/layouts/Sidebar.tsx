@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useState } from 'react';
 import { NavLink } from 'react-router';
+import type { BrowserProvider, EIP1193Provider, Eip1193Provider } from 'viem';
 
 import { getAddressBalance, walletClient } from '@/lib/wallet';
 import { educhainTestnet } from '@/lib/chain';
@@ -15,7 +16,7 @@ import CopyIcon from '@/assets/copy.svg'
 
 declare global {
     interface Window {
-        ethereum: any;
+        ethereum: EIP1193Provider & BrowserProvider;
     }
 }
 
@@ -90,7 +91,11 @@ const Sidebar: React.FC<SidebarProps> = ({ toggleAIChat, isAIChatOpen, styleName
             </div>
             {address ? <div className="mb-4 relative">
                 <button type="button" onClick={walletPopupClick} className="bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
-                    <img className="w-12 h-12 rounded-full border-2 border-zinc-600 hover:animate-spin" src={`https://api.dicebear.com/9.x/lorelei-neutral/svg?seed=${address}&radius=50&backgroundColor=transparent`} />
+                    <img
+                        className="w-12 h-12 rounded-full border-2 border-zinc-600 hover:animate-spin"
+                        src={`https://api.dicebear.com/9.x/lorelei-neutral/svg?seed=${address}&radius=50&backgroundColor=transparent`}
+                        alt="user avatar"
+                        />
                 </button>
                 {showWalletPopup && <WalletPopup address={address} balance={balance} />}
             </div> : <button onClick={connectWallet} type="button" className="mb-4 bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
