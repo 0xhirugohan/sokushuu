@@ -1,5 +1,10 @@
 import type React from 'react';
+import { useState } from 'react';
 import { NavLink } from 'react-router';
+import type { BrowserProvider, EIP1193Provider, Eip1193Provider } from 'viem';
+
+import { getAddressBalance, walletClient } from '@/lib/wallet';
+import { educhainTestnet } from '@/lib/chain';
 
 import SokushuuLogo from '@/assets/sokushuu.svg'
 import FlashcardIcon from '@/assets/flashcard.svg'
@@ -7,6 +12,34 @@ import MarketIcon from '@/assets/market.svg'
 import AiIcon from '@/assets/ai.svg'
 import AiChatIcon from '@/assets/ai-chat.svg'
 import WalletIcon from '@/assets/wallet.svg'
+import CopyIcon from '@/assets/copy.svg'
+
+declare global {
+    interface Window {
+        ethereum: EIP1193Provider & BrowserProvider;
+    }
+}
+
+interface WalletPopupProps {
+    address: `0x${string}`;
+    balance: string;
+}
+
+const WalletPopup: React.FC<WalletPopupProps> = ({ address, balance }) => {
+    const copyAddress = () => {
+        navigator.clipboard.writeText(address);
+    }
+
+    return <div className="bg-zinc-100 absolute bottom-16 w-[28vw] text-sm border-2 border-zinc-600 rounded-md p-2 z-10">
+        <div className="flex gap-x-2">
+            <span>Address: {address.slice(0, 4)}...{address.slice(-4)}</span>
+            <button type="button" onClick={copyAddress} className="bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
+                <img className="w-4 h-4" src={CopyIcon} alt="Copy Icon" />
+            </button>
+        </div>
+        <p>Balance: {balance}</p>
+    </div>
+}
 
 interface SidebarProps {
     toggleAIChat: () => void;
@@ -15,6 +48,33 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ toggleAIChat, isAIChatOpen, styleName }: SidebarProps) => {
+    const [address, setAddress] = useState<`0x${string}` | null>(null);
+    const [balance, setBalance] = useState<string>('0');
+    const [showWalletPopup, setShowWalletPopup] = useState<boolean>(false);
+
+    const connectWallet = async () => {
+        const [walletAddress] = await walletClient.requestAddresses();
+        setAddress(walletAddress);
+
+        const userChainId = await walletClient.getChainId();
+        if (userChainId !== educhainTestnet.id) {
+            await walletClient.addChain({ chain: educhainTestnet });
+        }
+    };
+
+    const walletPopupClick = async () => {
+        if (!address) return;
+
+        if (showWalletPopup) {
+            setShowWalletPopup(false);
+            return;
+        }
+
+        setShowWalletPopup(true);
+        const balance = await getAddressBalance(address);
+        setBalance(balance);
+    }
+
     return <div className={`${styleName} w-28 h-full border-2 border-zinc-600 rounded-md p-2`}>
         <div className="h-full flex flex-col gap-y-12 justify-between items-center">
             <div className="flex flex-col gap-y-12 justify-center items-center">
@@ -29,9 +89,18 @@ const Sidebar: React.FC<SidebarProps> = ({ toggleAIChat, isAIChatOpen, styleName
                     <img className="w-8 h-8 hover:opacity-70" src={isAIChatOpen ? AiChatIcon : AiIcon} alt="Ai Icon" />
                 </button>
             </div>
-            <button type="button" className="mb-4 bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
+            {address ? <div className="mb-4 relative">
+                <button type="button" onClick={walletPopupClick} className="bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
+                    <img
+                        className="w-12 h-12 rounded-full border-2 border-zinc-600 hover:animate-spin"
+                        src={`https://api.dicebear.com/9.x/lorelei-neutral/svg?seed=${address}&radius=50&backgroundColor=transparent`}
+                        alt="user avatar"
+                        />
+                </button>
+                {showWalletPopup && <WalletPopup address={address} balance={balance} />}
+            </div> : <button onClick={connectWallet} type="button" className="mb-4 bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
                 <img className="w-8 h-8 hover:opacity-70" src={WalletIcon} alt="Wallet Icon" />
-            </button>
+            </button>}
         </div>
     </div>
 };
