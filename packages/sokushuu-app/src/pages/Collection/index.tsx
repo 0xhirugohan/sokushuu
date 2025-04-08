@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { useParams } from "react-router";
 
 import { Collection as CollectionComponent } from "@/components/flashcards/Collection";

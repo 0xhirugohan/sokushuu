@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import SearchIcon from "@/assets/search.svg";
@@ -22,7 +23,6 @@ const SearchInput = ({ setToggleOff, setSearchQuery, searchQuery, onSubmit }: { 
 
     return <div className="w-full relative">
         <input
-            autoFocus
             onBlur={handleOnBlur}
             onChange={setSearchQueryOnChange}
             onKeyUp={handleKeyUp}

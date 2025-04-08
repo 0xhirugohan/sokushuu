@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 
 // import SearchIcon from "@/assets/search.svg";
 import PlayIcon from "@/assets/play.svg";
@@ -23,8 +24,14 @@ interface SellCollectionFormProps {
 const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, className }) => {
     const [isOnSale, setIsOnSale] = useState(true);
 
+    const handleCloseForm = (event: React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
+        if ((event instanceof KeyboardEvent && event.key === "Escape") || (event instanceof MouseEvent && event.button === 0)) {
+            closeForm();
+        }
+    }
+
     return <div className={`${className}`}>
-        <div onClick={closeForm} className="bg-zinc-300 absolute inset-0 opacity-40"></div>
+        <div onKeyUp={handleCloseForm} className="bg-zinc-300 absolute inset-0 opacity-40" />
         <div className="bg-zinc-100 border-2 border-zinc-600 rounded-lg absolute inset-x-4 inset-y-64 md:inset-x-20 md:inset-y-72 lg:inset-x-60 shadow-lg p-4 flex flex-col justify-between">
             <div className="flex flex-col gap-y-4 relative">
                 <input
@@ -43,11 +50,17 @@ const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, clas
     </div>
 }
 
-const ContentCardForm: React.FC<ContentCardFormProps> = ({ front, back, closeForm, className }) => {
+const ContentCardForm: React.FC<ContentCardFormProps> = ({ front, back, closeForm: closeFormProp, className }) => {
     const [isOwner, setIsOwner] = useState(false);
 
+    const closeForm = (event: React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
+        if ((event instanceof KeyboardEvent && event.key === "Escape") || (event instanceof MouseEvent && event.button === 0)) {
+            closeFormProp();
+        }
+    }
+
     return <div className={`${className}`}>
-        <div onClick={closeForm} className="bg-zinc-300 absolute inset-0 opacity-40"></div>
+        <div onKeyUp={closeForm} className="bg-zinc-300 absolute inset-0 opacity-40" />
         <div className="bg-zinc-100 border-2 border-zinc-600 rounded-lg absolute inset-x-4 inset-y-12 md:inset-x-20 md:inset-y-28 lg:inset-x-40 lg:inset-y-24 shadow-lg p-4 flex flex-col justify-between">
             <div className="flex flex-col gap-y-4">
                 <span className="text-lg">Front</span>
@@ -65,7 +78,7 @@ const ContentCardForm: React.FC<ContentCardFormProps> = ({ front, back, closeFor
                 />
             </div>
             <div className="flex justify-end gap-x-2">
-                <button onClick={closeForm} type="button" className="p-2 rounded-lg border-2 border-zinc-600 cursor-pointer">Cancel</button>
+                <button onClick={closeFormProp} type="button" className="p-2 rounded-lg border-2 border-zinc-600 cursor-pointer">Cancel</button>
                 { isOwner && <button type="submit" className="p-2 rounded-lg border-2 border-zinc-600 cursor-pointer">Save</button> }
             </div>
         </div>
@@ -124,7 +137,7 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug }) => {
     }
 
     const contentCards = Array.from({ length: 12 }, (_, index) => (
-        <ContentCard openForm={() => handleFormOpen(index)} key={index} front={`Front ${index + 1}`} back={`Back ${index + 1}`} />
+        <ContentCard openForm={() => handleFormOpen(index)} key={new Date().toISOString()} front={`Front ${index + 1}`} back={`Back ${index + 1}`} />
     ));
 
     return <>
