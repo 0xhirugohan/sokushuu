@@ -1,8 +1,3 @@
-deploy:
-	forge script script/Counter.s.sol --account dev
-deploy-broadcast:
-	forge script script/Counter.s.sol --account dev --broadcast --skip-simulation
-
 # Filter out the target name ('verify') from the command-line goals
 # to get the remaining arguments.
 ARGS := $(filter-out $@,$(MAKECMDGOALS))
@@ -12,15 +7,19 @@ ARG0 := $(word 1, $(ARGS))
 ARG1 := $(word 2, $(ARGS))
 ARG2 := $(word 3, $(ARGS))
 
+deploy:
+	forge script $(ARG1) --account dev
+deploy-broadcast:
+	forge script $(ARG1) --account dev --broadcast --skip-simulation
+
 verify:
 	@echo "Attempting verification with:"
-	@echo "  Arg0 (Address?): $(ARG0)"
-	@echo "  Arg1 (Contract Name?): $(ARG1)"
+	@echo "  Arg1 (Address?): $(ARG1)"
+	@echo "  Arg2 (Contract Name?): $(ARG2)"
 	forge verify-contract \
-		--chain-id 656476 \
-		--num-of-optimizations 1000000 \
-		--watch \
-		--constructor-args "constructor()" \
+		--rpc-url https://rpc.open-campus-codex.gelato.digital \
+		--verifier blockscout \
+		--verifier-url 'https://edu-chain-testnet.blockscout.com/api/' \
 		$(ARG1) \
 		$(ARG2)
 
