@@ -1,0 +1,7 @@
+lib/*
+out/
+cache/
+broadcast/
+
+# Soldeer
+/dependencies
