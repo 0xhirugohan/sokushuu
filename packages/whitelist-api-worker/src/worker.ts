@@ -1,6 +1,13 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 
 const app = new Hono()
+
+app.use('*', cors({
+  origin: ['https://sokushuu.de', 'https://www.sokushuu.de', 'http://localhost:5173'],
+  allowHeaders: ['Content-Type'],
+  allowMethods: ['GET', 'POST'],
+}))
 
 app.get('/', (c) => c.text('Hello World'))
 
