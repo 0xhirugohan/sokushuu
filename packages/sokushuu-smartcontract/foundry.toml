@@ -3,6 +3,7 @@ src = "src"
 out = "out"
 libs = ["dependencies"]
 solc = "0.8.28"
+gas_limit = "33554432"
 
 [rpc_endpoints]
 educhain-testnet = "https://rpc.open-campus-codex.gelato.digital"

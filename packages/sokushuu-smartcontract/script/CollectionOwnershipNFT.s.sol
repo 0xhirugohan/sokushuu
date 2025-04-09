@@ -10,9 +10,12 @@ contract CollectionOwnershipNFTScript is Script {
     function setUp() public {}
     
     function run() public {
+        // get sokushuu mint sale address from env
+        address sokushuuMintSaleAddress = vm.envAddress("SOKUSHUU_MINT_SALE_ADDRESS");
+
         vm.createSelectFork("educhain-testnet");
         vm.startBroadcast();
-        collectionOwnershipNFT = new CollectionOwnershipNFT("Sokushuu Collection Ownership NFT", "SCON", 0.01 ether);
+        collectionOwnershipNFT = new CollectionOwnershipNFT("Sokushuu Collection Ownership NFT", "SCON", 0.01 ether, sokushuuMintSaleAddress);
         vm.stopBroadcast();
     }
 }
