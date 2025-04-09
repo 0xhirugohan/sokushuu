@@ -1,8 +1,10 @@
 import type React from "react";
 import { useState } from "react";
 
+import { deployNFTContract, registerDeployedNFTContract } from "@/lib/wallet";
+
 // import SearchIcon from "@/assets/search.svg";
-import PlayIcon from "@/assets/play.svg";
+// import PlayIcon from "@/assets/play.svg";
 // import HamburgerIcon from "@/assets/hamburger.svg";
 // import GridIcon from "@/assets/grid.svg";
 import DollarIcon from "@/assets/dollar.svg";
@@ -19,10 +21,33 @@ interface ContentCardFormProps {
 interface SellCollectionFormProps {
     closeForm: () => void;
     className?: string;
+    collectionTitle: string;
 }
 
-const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, className }) => {
-    const [isOnSale, setIsOnSale] = useState(true);
+const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, className, collectionTitle }) => {
+    const [isOnSale, setIsOnSale] = useState(false);
+    const [sellPrice, setSellPrice] = useState(0);
+
+    const deployERC721 = async (price: number) => {
+        const contractAddress = await deployNFTContract(`Sokushuu Collection - ${collectionTitle}`, "SCUG", price);
+        const hash = await registerDeployedNFTContract(contractAddress);
+        return hash;
+    }
+
+    const handleSell = async () => {
+        if (sellPrice <= 0) {
+            alert("Please enter a valid price");
+            return;
+        }
+
+        try {
+            await deployERC721(sellPrice);
+            setIsOnSale(true);
+            closeForm();
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     const handleCloseForm = (event: React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
         if ((event instanceof KeyboardEvent && event.key === "Escape") || (event instanceof MouseEvent && event.button === 0)) {
@@ -33,18 +58,26 @@ const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, clas
     return <div className={`${className}`}>
         <div onKeyUp={handleCloseForm} className="bg-zinc-300 absolute inset-0 opacity-40" />
         <div className="bg-zinc-100 border-2 border-zinc-600 rounded-lg absolute inset-x-4 inset-y-64 md:inset-x-20 md:inset-y-72 lg:inset-x-60 shadow-lg p-4 flex flex-col justify-between">
+            <input
+                type="text"
+                className="w-full border-2 border-zinc-600 rounded-lg p-2"
+                disabled
+                value={collectionTitle}
+            />
             <div className="flex flex-col gap-y-4 relative">
                 <input
                     type="number"
                     className="w-full border-2 border-zinc-600 rounded-lg p-2 text-right"
                     placeholder="Price"
                     disabled={isOnSale}
+                    value={sellPrice}
+                    onChange={(e) => setSellPrice(Number(e.target.value))}
                 />
                 <img src={DollarIcon} alt="dollar" className="absolute inset-y-0 my-auto left-3 w-6 h-6" />
             </div>
             <div className="flex justify-end gap-x-2">
                 <button onClick={closeForm} type="button" className="p-2 w-24 rounded-lg border-2 border-zinc-600 cursor-pointer hover:opacity-70">Cancel</button>
-                { !isOnSale && <button type="submit" className="p-2 w-24 rounded-lg border-2 border-zinc-600 cursor-pointer hover:opacity-70">Sell</button> }
+                { !isOnSale && <button onClick={handleSell} type="submit" className="p-2 w-24 rounded-lg border-2 border-zinc-600 cursor-pointer hover:opacity-70">Sell</button> }
             </div>
         </div>
     </div>
@@ -110,9 +143,10 @@ const ContentCard: React.FC<ContentCardProps> = ({ front, back, openForm, classN
 
 interface AllContentCardProps { 
     collectionSlug?: string;
+    collectionTitle?: string;
 }
 
-const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug }) => {
+const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collectionTitle }) => {
     const [isUserOwned, setIsUserOwned] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isSellFormOpen, setIsSellFormOpen] = useState(false);
@@ -171,7 +205,7 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug }) => {
             {contentCards}
         </div>
         { isFormOpen && <ContentCardForm front={contentCards[selectedCardIndex].props.front} back={contentCards[selectedCardIndex].props.back} closeForm={handleFormClose} /> }
-        { isSellFormOpen && <SellCollectionForm closeForm={handleSellFormClose} /> }
+        { isSellFormOpen && <SellCollectionForm closeForm={handleSellFormClose} collectionTitle={collectionTitle ?? "No Collection"} /> }
     </>
 }
 
