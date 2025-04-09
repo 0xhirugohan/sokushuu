@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS waitlist (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_waitlists_email ON waitlists (email);
+
