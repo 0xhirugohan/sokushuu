@@ -25,13 +25,13 @@ contract SokushuuMintSaleTest is Test {
         assertEq(sokushuuMintSale.i_withdrawFeePercentage(), 500 wei);
     }
 
-    function test_CollectionDeployFromCollectionOwnershipNFT() public {
+    function test_CollectionRegisterFromCollectionOwnershipNFT() public {
         vm.startPrank(bob);
-        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", 1 ether);
+        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", 1 ether, address(sokushuuMintSale));
         vm.stopPrank();
 
         vm.startPrank(address(collectionOwnershipNFT));
-        sokushuuMintSale.deploy(address(collectionOwnershipNFT), 1 ether);
+        sokushuuMintSale.register(address(collectionOwnershipNFT), 1 ether);
         vm.stopPrank();
 
         assertEq(sokushuuMintSale.NFTCollectionOwner(address(collectionOwnershipNFT)), bob);
@@ -39,14 +39,14 @@ contract SokushuuMintSaleTest is Test {
 
     function test_MintFromAuthorizedContract() public {
         vm.startPrank(bob);
-        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", 1 ether);
+        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", 1 ether, address(sokushuuMintSale));
         vm.stopPrank();
 
         vm.deal(address(collectionOwnershipNFT), 1 ether);
 
         vm.startPrank(address(collectionOwnershipNFT));
-        sokushuuMintSale.deploy(address(collectionOwnershipNFT), 1 ether);
-        sokushuuMintSale.mint{value: 1 ether}(address(collectionOwnershipNFT), alice);
+        sokushuuMintSale.register(address(collectionOwnershipNFT), 1 ether);
+        sokushuuMintSale.depositSale{value: 1 ether}();
         vm.stopPrank();
 
         assertEq(sokushuuMintSale.mintSaleBalance(bob), 1 ether);
@@ -58,14 +58,14 @@ contract SokushuuMintSaleTest is Test {
         uint256 mintPrice = 100 ether;
 
         vm.startPrank(bob);
-        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", mintPrice);
+        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", mintPrice, address(sokushuuMintSale));
         vm.stopPrank();
 
         vm.deal(address(collectionOwnershipNFT), mintPrice);
 
         vm.startPrank(address(collectionOwnershipNFT));
-        sokushuuMintSale.deploy(address(collectionOwnershipNFT), mintPrice);
-        sokushuuMintSale.mint{value: mintPrice}(address(collectionOwnershipNFT), alice);
+        sokushuuMintSale.register(address(collectionOwnershipNFT), mintPrice);
+        sokushuuMintSale.depositSale{value: mintPrice}();
         vm.stopPrank();
 
         vm.startPrank(bob);
@@ -111,14 +111,14 @@ contract SokushuuMintSaleTest is Test {
         assertEq(sokushuuMintSale.getClaimableFee(), 0);
 
         vm.startPrank(bob);
-        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", 1 ether);
+        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", 1 ether, address(sokushuuMintSale));
         vm.stopPrank();
 
         vm.deal(address(collectionOwnershipNFT), 1 ether);
 
         vm.startPrank(address(collectionOwnershipNFT));
-        sokushuuMintSale.deploy(address(collectionOwnershipNFT), 1 ether);
-        sokushuuMintSale.mint{value: 1 ether}(address(collectionOwnershipNFT), alice);
+        sokushuuMintSale.register(address(collectionOwnershipNFT), 1 ether);
+        sokushuuMintSale.depositSale{value: 1 ether}();
         vm.stopPrank();
         
         assertEq(sokushuuMintSale.getClaimableFee(), 0);
@@ -139,34 +139,32 @@ contract SokushuuMintSaleTest is Test {
         =============
      */
 
-    function test_CollectionDeployFromStandardContract() public {
+    function test_CollectionRegisterFromStandardContract() public {
         vm.startPrank(bob);
         SampleContractTest standardContract = new SampleContractTest();
         vm.stopPrank();
 
         vm.startPrank(address(standardContract));
         vm.expectRevert();
-        sokushuuMintSale.deploy(address(standardContract), 1 ether);
+        sokushuuMintSale.register(address(standardContract), 1 ether);
         vm.stopPrank();
 
         vm.startPrank(bob);
-        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", 1 ether);
+        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", 1 ether, address(sokushuuMintSale));
         vm.stopPrank();
 
         vm.startPrank(alice);
         vm.expectRevert();
-        sokushuuMintSale.deploy(address(collectionOwnershipNFT), 1 ether);
+        sokushuuMintSale.register(address(collectionOwnershipNFT), 1 ether);
         vm.stopPrank();
     }
 
     function test_MintFromUnauthorizedContract() public {
         vm.deal(bob, 1 ether);
 
-        CollectionOwnershipNFT collectionOwnershipNFT = new CollectionOwnershipNFT("Test NFT", "TEST", 1 ether);
-
         vm.startPrank(bob);
         vm.expectRevert(SokushuuMintSale.error_InvalidNFTCollection.selector);
-        sokushuuMintSale.mint{value: 1 ether}(address(collectionOwnershipNFT), alice);
+        sokushuuMintSale.depositSale{value: 1 ether}();
         vm.stopPrank();
     }
 }

@@ -21,9 +21,10 @@ contract SokushuuMintSale {
     error error_InsufficientBalance();
     error error_NotFeeRecipient();
     error error_InsufficientClaimableFee();
+    error error_NFTCollectionAlreadyRegistered();
 
     event Deploy(address indexed nftCollection, address indexed owner, uint256 mintPrice);
-    event Mint(address indexed nftCollection, address indexed recipient, uint256 amount);
+    event Deposit(address indexed nftCollection, address indexed owner, uint256 amount);
     event Withdraw(address indexed user, uint256 amount);
 
     constructor(uint256 _withdrawFeePercentage, address _feeRecipientAddress) {
@@ -31,31 +32,26 @@ contract SokushuuMintSale {
         i_feeRecipientAddress = _feeRecipientAddress;
     }
 
-    modifier onlyNFTCollectionContract() {
-        
-        _;
-    }
-
-    function deploy(address _nftCollection, uint256 _mintPrice) public {
+    function register(address _nftCollection, uint256 _mintPrice) public {
         address owner = ICollectionOwnershipNFT(address(msg.sender)).owner();
 
         if (owner == address(0)) {
             revert error_InvalidNFTCollectionOwner();
         }
 
+        if (NFTCollectionOwner[_nftCollection] != address(0)) {
+            revert error_NFTCollectionAlreadyRegistered();
+        }
+
         NFTCollectionOwner[_nftCollection] = owner;
         emit Deploy(_nftCollection, owner, _mintPrice);
     }
 
-    function mint(address _nftCollection, address _recipient) public payable onlyNFTCollectionContract {
-        address owner = NFTCollectionOwner[_nftCollection];
+    function depositSale() external payable {
+        address owner = NFTCollectionOwner[msg.sender];
 
         if (owner == address(0)) {
             revert error_InvalidNFTCollection();
-        }
-
-        if (_recipient == address(0)) {
-            revert error_InvalidRecipient();
         }
 
         if (msg.value == 0) {
@@ -63,7 +59,7 @@ contract SokushuuMintSale {
         }
 
         mintSaleBalance[owner] += msg.value;
-        emit Mint(_nftCollection, _recipient, msg.value);
+        emit Deposit(msg.sender, owner, msg.value);
     }
 
     function withdraw(uint256 amount) public {
