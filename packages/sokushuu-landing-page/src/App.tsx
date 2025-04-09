@@ -1,34 +1,26 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import type React from 'react'
 
-function App() {
-  const [count, setCount] = useState(0)
+import SokushuuLogo from './assets/sokushuu.svg'
 
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="bg-zinc-100 w-full min-h-screen">
+      <div className="min-h-screen p-4 flex justify-center items-center">
+        <div className="flex flex-col gap-y-24 text-center min-w-60 w-[60vw] lg:w-[40vw]">
+          <div className="flex flex-col gap-y-8 items-center">
+            <div className="flex items-center gap-x-4">
+              <img src={SokushuuLogo} alt="Sokushuu" className="w-16 h-16 border-2 border-zinc-600 rounded-md" />
+              <h2 className="text-3xl">Sokushuu.de</h2>
+            </div>
+            <p className="text-xl">Learning can be done anytime and anywhere.</p>
+          </div>
+          <div className="flex md:flex-row flex-col md:gap-x-4 gap-y-4">
+            <input type="text" placeholder="vitalik@ethereum.org" className="flex-2 xl:flex-3 rounded-md p-2 border-2 border-zinc-600" />
+            <button className="shrink-1 rounded-md p-2 bg-zinc-200">Register Waitlist</button>
+          </div>
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   )
 }
 
