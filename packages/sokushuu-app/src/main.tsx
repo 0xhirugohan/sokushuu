@@ -8,6 +8,7 @@ import { Ai } from '@/pages/Ai'
 import { Market } from '@/pages/Market'
 import { Search } from '@/pages/Search'
 import { Collection } from '@/pages/Collection'
+import { Category } from '@/pages/Category'
 import { Layout } from '@/components/layout'
 
 function getOrSetRootElement(): HTMLElement {
@@ -31,6 +32,7 @@ createRoot(root).render(
           <Route path="ai" element={<Ai />} />
           <Route path="market" element={<Market />} />
           <Route path="search" element={<Search />} />
+          <Route path="category/:slug" element={<Category />} />
           <Route path="collection/:slug" element={<Collection />} />
           <Route path="*" element={<div>404</div>} />
         </Route>

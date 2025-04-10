@@ -1,5 +1,6 @@
 import type React from "react";
 import { useState } from "react";
+import { NavLink } from "react-router";
 
 import { deployNFTContract, registerDeployedNFTContract } from "@/lib/wallet";
 
@@ -209,4 +210,30 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collect
     </>
 }
 
-export { AllContentCard };
+interface ICollection {
+    collectionId: string;
+    name: string;
+    creator: string;
+    sellingPrice: number;
+}
+
+interface AllCollectionProps {
+    collections: ICollection[];
+}
+
+const AllCollection: React.FC<AllCollectionProps> = ({ collections }) => {
+    return <>
+        <div className="w-full grid grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
+            {collections.map((collection) => (
+                <NavLink
+                    to={`/collection/${collection.collectionId}`}
+                className="h-20 md:h-40 w-[32vw] md:w-[20vw] rounded-lg border-2 border-zinc-500 flex justify-center items-center"
+            >
+                    {collection.name}
+                </NavLink>
+            ))}
+        </div>
+    </>
+}
+
+export { AllContentCard, AllCollection };

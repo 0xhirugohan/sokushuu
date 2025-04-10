@@ -63,7 +63,7 @@ app.get("/chat/wallet/history", authMiddleware, async (c) => {
 	const address = c.get("address");
 
 	const { results } = await c.env.DB.prepare(
-		"SELECT Message as message, IsUser as isUser, CreatedAt as timestamp FROM Messages WHERE Address = ? LIMIT 10"
+		"SELECT Message as message, IsUser as isUser, CreatedAt as timestamp FROM Messages WHERE Address = ? ORDER BY CreatedAt DESC LIMIT 10"
 	).bind(address).all();
 
 	return c.json({ data: results });
@@ -107,39 +107,62 @@ app.post("/chat/wallet/message", authMiddleware, async (c) => {
  * ================================
  */
 
-app.get("/homepage/dashboard", authMiddleware, (c) => {
+app.get("/homepage/dashboard", authMiddleware, async (c) => {
 	const address = c.get("address");
-	const exploreCollections: string[] = [];
-	const favoriteCollections: string[] = [];
-	const recentlyViewedCollections: string[] = [];
-	const recentlyCreatedCollections: string[] = [];
+	// const favoriteCollections: string[] = []; // TODO: implement
+	// const recentlyViewedCollections: string[] = []; // TODO: implement
+	// const recentlyCreatedCollections: string[] = [];
+
+	const exploreCollectionPromise = c.env.DB.prepare(
+		"SELECT CollectionId as collectionId, Name as name, Creator as creator, SellingPrice as sellingPrice FROM Collections ORDER BY CreatedAt DESC LIMIT 5"
+	).all();	
+
+	const recentlyCreatedCollectionPromise = c.env.DB.prepare(
+		"SELECT CollectionId as collectionId, Name as name, Creator as creator, SellingPrice as sellingPrice FROM Collections WHERE Creator = ? ORDER BY CreatedAt DESC LIMIT 5"
+	).bind(address).all();
+
+	const [exploreCollections, recentlyCreatedCollections] = await Promise.all([exploreCollectionPromise, recentlyCreatedCollectionPromise]);
 
 	const data = {
 		address,
-		exploreCollections,
-		favoriteCollections,
-		recentlyViewedCollections,
-		recentlyCreatedCollections,
+		exploreCollections: exploreCollections.results,
+		// favoriteCollections,
+		// recentlyViewedCollections,
+		recentlyCreatedCollections: recentlyCreatedCollections.results,
 	};
 	return c.json({ data });
 });
 
-app.get("/homepage/dashboard/search", authMiddleware, (c) => {
+app.get("/homepage/dashboard/search", authMiddleware, async (c) => {
 	const { query } = c.req.query();
-	const searchResults: string[] = [];
+
+	const searchResults = await c.env.DB.prepare(
+		"SELECT CollectionId as collectionId, Name as name, Creator as creator, SellingPrice as sellingPrice FROM Collections WHERE Name LIKE ? ORDER BY CreatedAt DESC LIMIT 30"
+	).bind(`%${query}%`).all();
+
 	const data = {
 		query,
-		searchResults,
+		searchResults: searchResults.results,
 	};
 	return c.json({ data });
 });
 
-app.get("/homepage/dashboard/category/:slug", authMiddleware, (c) => {
+app.get("/homepage/dashboard/category/:slug", authMiddleware, async (c) => {
+	const address = c.get("address");
 	const { slug } = c.req.param();
-	const collections: string[] = [];
+	let collections = [];
+	if (slug === 'recently-created') {
+		collections = await c.env.DB.prepare(
+			"SELECT CollectionId as collectionId, Name as name, Creator as creator, SellingPrice as sellingPrice FROM Collections WHERE Creator = ? ORDER BY CreatedAt DESC LIMIT 30"
+		).bind(address).all();
+	} else {
+		collections = await c.env.DB.prepare(
+			"SELECT CollectionId as collectionId, Name as name, Creator as creator, SellingPrice as sellingPrice FROM Collections ORDER BY CreatedAt DESC LIMIT 30"
+		).all();
+	}
 	const data = {
 		slug,
-		collections,
+		collections: collections.results,
 	};
 	return c.json({ data });
 });
@@ -164,9 +187,14 @@ app.get("/homepage/dashboard/collection/:collectionAddress", authMiddleware, (c)
 
 app.post("/homepage/dashboard/collection", authMiddleware, async (c) => {
 	const address = c.get("address");
-	const { name, collectionAddress } = await c.req.json();
+	const { name } = await c.req.json();
+
+	const { success } = await c.env.DB.prepare(
+		"INSERT INTO Collections (Name, Creator) VALUES (?, ?)"
+	).bind(name, address).run();
+
 	c.status(201);
-	return c.json({ data: { address, name, collectionAddress } });
+	return c.json({ data: { address, name, success } });
 });
 
 app.post("/homepage/dashboard/collection/flashcard", authMiddleware, async (c) => {
