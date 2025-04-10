@@ -1,6 +1,9 @@
+
+import { useState, useEffect } from "react";
+
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatHistory } from "@/components/chat/ChatHistory";
-import { useState } from "react";
+import { getChatHistory } from "@/lib/api";
 
 interface IChatHistory {
     message: string;
@@ -10,6 +13,14 @@ interface IChatHistory {
 
 const ChatMenu = ({ className }: { className?: string }) => {
     const [chatHistories, setChatHistories] = useState<IChatHistory[]>([]);
+
+    useEffect(() => {
+        const fetchChatHistory = async () => {
+            const chatHistory = await getChatHistory();
+            setChatHistories(chatHistory);
+        }
+        fetchChatHistory();
+    }, []);
 
     const handleMessageSent = (messages: IChatHistory[]) => {
         const newChatHistories = [...chatHistories, ...messages];
