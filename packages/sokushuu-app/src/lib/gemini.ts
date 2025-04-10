@@ -27,12 +27,15 @@ interface GenerateContentResponse {
 
 const generateContent = async (content: string) : Promise<GenerateContentResponse> => {
     const apiUrl = import.meta.env.VITE_API_URL
+    const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
     const response = await fetch(
         `${apiUrl}/chat/wallet/message`,
         {
             method: "POST",
+            mode: "cors",
             headers: {
                 'Content-Type': 'application/json',
+                'X-Address': address,
             },
             body: JSON.stringify({
                 content
@@ -41,7 +44,6 @@ const generateContent = async (content: string) : Promise<GenerateContentRespons
     )
     const data = await response.json()
     const { candidates, usageMetadata, modelVersion } = data.data;
-    console.log({ candidates, usageMetadata, modelVersion })
     return { candidates, usageMetadata, modelVersion };
 }
 

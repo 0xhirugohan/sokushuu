@@ -20,7 +20,8 @@ interface AuthMiddlewareContext extends Context {
 }
 
 const authMiddleware = createMiddleware<AuthMiddlewareContext>(async (c, next) => {
-	const address = getCookie(c, "address");
+	const address = c.req.header("X-Address");
+	console.log({ address });
 	if (!address) {
 		c.status(401);
 		return c.json({ error: "Unauthorized" });
@@ -43,7 +44,6 @@ app.get("/", (c) => c.json({ message: "Welcome to Sokushuu API 0.1.0" }));
  */
 app.post("/auth/login", async (c) => {
 	const { address } = await c.req.json();
-	// set address value to cookie
 	setCookie(c, "address", address);
 	c.status(201);
 	return c.json({ data: { address } });
@@ -51,7 +51,6 @@ app.post("/auth/login", async (c) => {
 
 app.post("/auth/logout", authMiddleware, async (c) => {
 	deleteCookie(c, "address");
-	c.status(201);
 	return c.json({ data: { address: null } });
 });
 /**
@@ -68,9 +67,8 @@ app.get("/chat/wallet/history", authMiddleware, (c) => {
 });
 
 // send a message from a wallet address
-app.post("/chat/wallet/message", async (c) => {
-	// const address = c.get("address");
-	const address = "0x0000000000000000000000000000000000000000";
+app.post("/chat/wallet/message", authMiddleware, async (c) => {
+	const address = c.get("address");
 	const { content } = await c.req.json();
 
 	const { candidates, usageMetadata, modelVersion } = await generateChatCompletion(c, content);
