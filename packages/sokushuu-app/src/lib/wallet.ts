@@ -63,3 +63,27 @@ export const registerDeployedNFTContract = async (contractAddress: `0x${string}`
     const hash = await walletClient.writeContract(request);
     return hash;
 }
+
+export const buyAndMintNFT = async (contractAddress: `0x${string}`, price: number) => {
+    const account = await getAccount();
+    const hash = await walletClient.writeContract({
+        account,
+        address: contractAddress,
+        abi: wagmiAbi,
+        functionName: 'mint',
+        value: parseEther(`${price}`, "wei"),
+        args: [account],
+    });
+    return hash;
+}
+
+export const checkIfUserHasNFT = async (contractAddress: `0x${string}`): Promise<boolean> => {
+    const account = await getAccount();
+    const balance = await publicClient.readContract({
+        address: contractAddress,
+        abi: wagmiAbi,
+        functionName: 'balanceOf',
+        args: [account],
+    });
+    return balance > 0;
+}

@@ -1,8 +1,9 @@
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router";
 
-import { deployNFTContract, registerDeployedNFTContract } from "@/lib/wallet";
+import { buyAndMintNFT, deployNFTContract, registerDeployedNFTContract, checkIfUserHasNFT } from "@/lib/wallet";
+import { createFlashcard, updateCollectionSellingPrice } from "@/lib/api";
 
 // import SearchIcon from "@/assets/search.svg";
 // import PlayIcon from "@/assets/play.svg";
@@ -11,8 +12,11 @@ import { deployNFTContract, registerDeployedNFTContract } from "@/lib/wallet";
 import DollarIcon from "@/assets/dollar.svg";
 
 import { Textarea } from "@/components/ui/textarea";
+import type { ICollection } from "@/components/layouts/FlashcardMenu";
 
 interface ContentCardFormProps {
+    isOwner: boolean;
+    collectionId: number;
     front: string;
     back: string;
     closeForm: () => void;
@@ -22,17 +26,17 @@ interface ContentCardFormProps {
 interface SellCollectionFormProps {
     closeForm: () => void;
     className?: string;
-    collectionTitle: string;
+    collectionMetadata: ICollection | null;
 }
 
-const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, className, collectionTitle }) => {
-    const [isOnSale, setIsOnSale] = useState(false);
-    const [sellPrice, setSellPrice] = useState(0);
+const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, className, collectionMetadata }) => {
+    const [isOnSale, setIsOnSale] = useState(collectionMetadata?.address !== null);
+    const [sellPrice, setSellPrice] = useState(collectionMetadata?.sellingPrice ?? 0);
 
     const deployERC721 = async (price: number) => {
-        const contractAddress = await deployNFTContract(`Sokushuu Collection - ${collectionTitle}`, "SCUG", price);
+        const contractAddress = await deployNFTContract(`Sokushuu Collection - ${collectionMetadata?.name ?? "No Collection"}`, "SCUG", price);
         const hash = await registerDeployedNFTContract(contractAddress);
-        return hash;
+        return { contractAddress, registerHash: hash };
     }
 
     const handleSell = async () => {
@@ -42,8 +46,11 @@ const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, clas
         }
 
         try {
-            await deployERC721(sellPrice);
+            const { contractAddress, registerHash } = await deployERC721(sellPrice);
             setIsOnSale(true);
+
+            await updateCollectionSellingPrice(parseInt(collectionMetadata?.collectionId ?? "0"), sellPrice, contractAddress);
+
             closeForm();
         } catch (error) {
             console.error(error);
@@ -63,7 +70,7 @@ const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, clas
                 type="text"
                 className="w-full border-2 border-zinc-600 rounded-lg p-2"
                 disabled
-                value={collectionTitle}
+                value={collectionMetadata?.name ?? "No Collection"}
             />
             <div className="flex flex-col gap-y-4 relative">
                 <input
@@ -84,13 +91,25 @@ const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, clas
     </div>
 }
 
-const ContentCardForm: React.FC<ContentCardFormProps> = ({ front, back, closeForm: closeFormProp, className }) => {
-    const [isOwner, setIsOwner] = useState(false);
+const ContentCardForm: React.FC<ContentCardFormProps> = ({ isOwner, collectionId, front, back, closeForm: closeFormProp, className }) => {
+    const [frontValue, setFrontValue] = useState(front);
+    const [backValue, setBackValue] = useState(back);
 
     const closeForm = (event: React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
         if ((event instanceof KeyboardEvent && event.key === "Escape") || (event instanceof MouseEvent && event.button === 0)) {
             closeFormProp();
         }
+    }
+
+    const onSubmit = async () => {
+        if (frontValue === '' || backValue === '') {
+            alert('Please enter a valid front and back');
+            return;
+        }
+
+        await createFlashcard(collectionId, frontValue, backValue);
+
+        closeFormProp();
     }
 
     return <div className={`${className}`}>
@@ -101,19 +120,21 @@ const ContentCardForm: React.FC<ContentCardFormProps> = ({ front, back, closeFor
                 <Textarea
                     className="w-full min-h-[12vh] border-2 border-zinc-600 rounded-lg p-2"
                     placeholder="Front"
-                    value={front}
+                    value={frontValue}
+                    onChange={(e) => setFrontValue(e.target.value)}
                 />
 
                 <span className="text-lg">Back</span>
                 <Textarea
                     className="w-full min-h-[12vh] border-2 border-zinc-600 rounded-lg p-2"
                     placeholder="Back"
-                    value={back}
+                    value={backValue}
+                    onChange={(e) => setBackValue(e.target.value)}
                 />
             </div>
             <div className="flex justify-end gap-x-2">
                 <button onClick={closeFormProp} type="button" className="p-2 rounded-lg border-2 border-zinc-600 cursor-pointer">Cancel</button>
-                { isOwner && <button type="submit" className="p-2 rounded-lg border-2 border-zinc-600 cursor-pointer">Save</button> }
+                { isOwner && collectionId === 0 && <button onClick={onSubmit} type="submit" className="p-2 rounded-lg border-2 border-zinc-600 cursor-pointer">Save</button> }
             </div>
         </div>
     </div>
@@ -131,7 +152,7 @@ const ContentCard: React.FC<ContentCardProps> = ({ front, back, openForm, classN
         openForm();
     }
     return <div className={`${className} h-20 md:h-40 w-[26vw] md:w-[20vw] rounded-lg border-2 border-zinc-500 flex justify-center items-center relative`}>
-        <span>{back}</span>
+        <p className="p-1 line-clamp-3 h-full w-full text-wrap wrap-words">{back}</p>
         <button
             type="button"
             className="absolute inset-1 bg-zinc-100 border-none flex justify-center items-center hover:opacity-0 hover:opacity-0 cursor-pointer"
@@ -142,20 +163,53 @@ const ContentCard: React.FC<ContentCardProps> = ({ front, back, openForm, classN
     </div>
 }
 
+interface IFlashcard {
+    flashcardId: number;
+    front: string;
+    back: string;
+}
+
 interface AllContentCardProps { 
     collectionSlug?: string;
     collectionTitle?: string;
+    collectionMetadata?: ICollection;
+    flashcards?: IFlashcard[];
 }
 
-const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collectionTitle }) => {
-    const [isUserOwned, setIsUserOwned] = useState(true);
+const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collectionTitle, collectionMetadata, flashcards }) => {
+    const [userAddress, setUserAddress] = useState<string | undefined>();
+    const [isUserOwned, setIsUserOwned] = useState(false);
+    const [isUserPurchased, setIsUserPurchased] = useState(false);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isSellFormOpen, setIsSellFormOpen] = useState(false);
     const [selectedCardIndex, setSelectedCardIndex] = useState(0);
+    const [selectedCard, setSelectedCard] = useState<IFlashcard | undefined>();
     const [isOnSale, setIsOnSale] = useState(false);
+
+    useEffect(() => {
+        const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
+        setUserAddress(address);
+        setIsUserOwned(collectionMetadata?.creator === userAddress);
+        setIsOnSale((collectionMetadata?.sellingPrice ?? 0) > 0 && collectionMetadata?.address !== null);
+
+        const checkIfUserHasNFTCall = async () => {
+            const hasNFT = await checkIfUserHasNFT(collectionMetadata?.address as `0x${string}` ?? "0x");
+            setIsUserPurchased(hasNFT);
+        }
+        if (collectionMetadata?.address !== null) {
+            checkIfUserHasNFTCall();
+        }
+    }, [collectionMetadata, userAddress]);
+
+    const handleBuy = async () => {
+        const hash = await buyAndMintNFT(collectionMetadata?.address as `0x${string}` ?? "0x", collectionMetadata?.sellingPrice ?? 0);
+        console.log(hash)
+    }
 
     const handleFormOpen = (cardIndex: number) => {
         setSelectedCardIndex(cardIndex);
+        const selectedFc = flashcards?.filter(flashcard => flashcard.flashcardId === cardIndex)[0];
+        setSelectedCard(selectedFc);
         setIsFormOpen(true);
     }
 
@@ -171,18 +225,14 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collect
         setIsSellFormOpen(false);
     }
 
-    const contentCards = Array.from({ length: 12 }, (_, index) => (
-        <ContentCard openForm={() => handleFormOpen(index)} key={new Date().toISOString()} front={`Front ${index + 1}`} back={`Back ${index + 1}`} />
-    ));
-
     return <>
         { collectionSlug && <div className="flex justify-between">
             { isUserOwned && <div className="flex gap-x-2">
-                <button type="button" className="border-2 border-zinc-600 px-6 text-sm py-2 rounded-md hover:opacity-70 cursor-pointer">Add</button>
+                <button onClick={() => handleFormOpen(0)} type="button" className="border-2 border-zinc-600 px-6 text-sm py-2 rounded-md hover:opacity-70 cursor-pointer">Add</button>
                 <button onClick={handleSellFormOpen} type="button" className="border-2 border-zinc-600 px-6 text-sm py-2 rounded-md hover:opacity-70 cursor-pointer">{ isOnSale ? "On Sale" : "Sell" }</button>
             </div>
             }
-            { !isUserOwned && <button type="button" className="border-2 border-zinc-600 px-6 text-sm py-2 rounded-md cursor-pointer">Buy</button> }
+            { !isUserOwned && !isUserPurchased && <button onClick={handleBuy} type="button" className="border-2 border-zinc-600 px-6 text-sm py-2 rounded-md cursor-pointer">Buy</button> }
             <div className="flex gap-x-4">
                 {/* For the next upcoming version
                 <button type="button" className="cursor-pointer hover:opacity-60">
@@ -203,18 +253,13 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collect
             </div>
         </div> }
         <div className="w-full grid grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
-            {contentCards}
+            {flashcards?.map((flashcard) => (
+                <ContentCard openForm={() => handleFormOpen(flashcard?.flashcardId)} key={flashcard.flashcardId} front={flashcard.front} back={flashcard.back} />
+            ))}
         </div>
-        { isFormOpen && <ContentCardForm front={contentCards[selectedCardIndex].props.front} back={contentCards[selectedCardIndex].props.back} closeForm={handleFormClose} /> }
-        { isSellFormOpen && <SellCollectionForm closeForm={handleSellFormClose} collectionTitle={collectionTitle ?? "No Collection"} /> }
+        { isFormOpen && <ContentCardForm collectionId={parseInt(collectionMetadata?.collectionId ?? "0")} isOwner={isUserOwned} front={selectedCard?.front ?? ''} back={selectedCard?.back ?? ''} closeForm={handleFormClose} /> }
+        { isSellFormOpen && <SellCollectionForm closeForm={handleSellFormClose} collectionMetadata={collectionMetadata ?? null} /> }
     </>
-}
-
-interface ICollection {
-    collectionId: string;
-    name: string;
-    creator: string;
-    sellingPrice: number;
 }
 
 interface AllCollectionProps {

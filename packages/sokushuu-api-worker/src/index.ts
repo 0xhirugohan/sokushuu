@@ -167,14 +167,23 @@ app.get("/homepage/dashboard/category/:slug", authMiddleware, async (c) => {
 	return c.json({ data });
 });
 
-app.get("/homepage/dashboard/collection/:collectionAddress", authMiddleware, (c) => {
-	const { collectionAddress } = c.req.param();
-	const meta = {};
-	const flashcards: string[] = [];
+app.get("/homepage/dashboard/collection/:id", authMiddleware, async (c) => {
+	const { id } = c.req.param();
+
+	const collectionPromise = c.env.DB.prepare(
+		"SELECT CollectionId as collectionId, Name as name, Address as address, Creator as creator, SellingPrice as sellingPrice FROM Collections WHERE CollectionId = ?"
+	).bind(id).first();
+
+	const flashcardsPromise = c.env.DB.prepare(
+		"SELECT FlashcardId as flashcardId, Front as front, Back as back FROM Flashcards WHERE CollectionId = ? ORDER BY CreatedAt DESC LIMIT 30"
+	).bind(id).all();
+
+	const [collection, flashcards] = await Promise.all([collectionPromise, flashcardsPromise]);
+
 	const data = {
-		collectionAddress,
-		meta,
-		flashcards,
+		id,
+		meta: collection,
+		flashcards: flashcards.results,
 	};
 	return c.json({ data });
 });
@@ -199,9 +208,19 @@ app.post("/homepage/dashboard/collection", authMiddleware, async (c) => {
 
 app.post("/homepage/dashboard/collection/flashcard", authMiddleware, async (c) => {
 	const address = c.get("address");
-	const { collectionAddress, front, back } = await c.req.json();
+	const { collectionId, front, back } = await c.req.json();
+
+	if (!collectionId || !front || !back) {
+		c.status(400);
+		return c.json({ error: "Missing required fields" });
+	}
+
+	const { success } = await c.env.DB.prepare(
+		"INSERT INTO Flashcards (CollectionId, Front, Back) VALUES (?, ?, ?)"
+	).bind(collectionId, front, back).run();
+
 	c.status(201);
-	return c.json({ data: { address, collectionAddress, front, back } });
+	return c.json({ data: { address, collectionId, front, back, success } });
 });
 
 app.delete("/homepage/dashboard/collection/flashcard/:collectionAddress/:flashcardId", authMiddleware, async (c) => {
@@ -219,12 +238,17 @@ app.post("/homepage/dashboard/collection/:collectionAddress/buy", authMiddleware
 	return c.json({ data: { address, collectionAddress, price } });
 });
 
-app.post("/homepage/dashboard/collection/:collectionAddress/sell", authMiddleware, async (c) => {
-	const address = c.get("address");
-	const { collectionAddress } = c.req.param();
-	const { price } = await c.req.json();
-	c.status(201);
-	return c.json({ data: { address, collectionAddress, price } });
+app.patch("/homepage/dashboard/collection/:collectionId/sell", authMiddleware, async (c) => {
+	const { collectionId } = c.req.param();
+	const { price, collectionAddress } = await c.req.json();
+
+	// update SellingPrice and Address
+	const { success } = await c.env.DB.prepare(
+		"UPDATE Collections SET SellingPrice = ?, Address = ? WHERE CollectionId = ?"
+	).bind(price, collectionAddress, collectionId).run();
+
+	c.status(200);
+	return c.json({ data: { collectionId, collectionAddress, price, success } });
 });
 
 export default app;

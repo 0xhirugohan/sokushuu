@@ -10,19 +10,28 @@ import { AllContentCard, AllCollection } from "@/components/layouts/AllContentCa
 import { searchCollections, searchCollectionsByCategory } from "@/lib/api";
 
 interface ICollection {
-    collectionId: string;
+    collectionId: number;
     name: string;
     creator: string;
     sellingPrice: number;
+    address?: string;
 }
+interface IFlashcard {
+    flashcardId: number;
+    front: string;
+    back: string;
+}
+
 interface FlashcardMenuProps {
     styleName?: string;
     searchQueryProps?: string;
     collectionSlug?: string;
     categoryId?: string;
+    collectionMetadata?: ICollection;
+    flashcards?: IFlashcard[];
 }
 
-const FlashcardMenu: React.FC<FlashcardMenuProps> = ({ styleName, searchQueryProps, collectionSlug, categoryId }) => {
+const FlashcardMenu: React.FC<FlashcardMenuProps> = ({ styleName, searchQueryProps, collectionSlug, categoryId, collectionMetadata, flashcards }) => {
     const [isCreateCollectionPopupOpen, setIsCreateCollectionPopupOpen] = useState(false);
     const [collections, setCollections] = useState<ICollection[]>([]);
 
@@ -60,15 +69,16 @@ const FlashcardMenu: React.FC<FlashcardMenuProps> = ({ styleName, searchQueryPro
     
     return <div className={`${styleName} p-4 w-full h-full flex flex-col gap-y-8 overflow-x-hidden relative`}>
         { searchQueryProps && <Title searchQueryProps={searchQueryProps} /> }
-        { collectionSlug && <Title collectionSlugProps={collectionSlug} /> }
+        { collectionSlug && <Title collectionSlugProps={collectionSlug} text={collectionMetadata?.name} /> }
         { categoryId && <Title collectionSlugProps={categoryId === "explore" ? "Explore" : "Recently Created"} /> }
         { !searchQueryProps && !collectionSlug && !categoryId && <Title /> }
 
         { (searchQueryProps || categoryId) && <AllCollection collections={collections} /> }
-        { collectionSlug && <AllContentCard collectionSlug={collectionSlug} /> }
+        { collectionSlug && <AllContentCard collectionSlug={collectionSlug} flashcards={flashcards} collectionMetadata={collectionMetadata} /> }
         { !searchQueryProps && !collectionSlug && !categoryId && <HomeContent showCreateCollectionPopup={showCreateCollectionPopup} /> }
         { isCreateCollectionPopupOpen && <CreateCollectionPopup onClose={closeCreateCollectionPopup} /> }
     </div>
 }
 
 export { FlashcardMenu };
+export type { ICollection, IFlashcard };

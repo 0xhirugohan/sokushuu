@@ -42,7 +42,7 @@ const getChatHistory = async (): Promise<IChatHistory[]> => {
 }
 
 interface ICollection {
-    collectionId: string;
+    collectionId: number;
     name: string;
     creator: string;
     sellingPrice: number;
@@ -111,6 +111,50 @@ const createCollection = async (name: string) => {
     return data.data;
 }
 
+const getCollectionDetails = async (collectionId: string) => {
+    const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/homepage/dashboard/collection/${collectionId}`, {
+        method: "GET",
+        mode: "cors",
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Address': address,
+        },
+    });
+    const data = await response.json();
+    return data.data;
+}
+
+const createFlashcard = async (collectionId: number, front: string, back: string) => {
+    const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/homepage/dashboard/collection/flashcard`, {
+        method: "POST",
+        mode: "cors",
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Address': address,
+        },
+        body: JSON.stringify({ collectionId, front, back }),
+    });
+    const data = await response.json();
+    return data.data;
+}
+
+const updateCollectionSellingPrice = async (collectionId: number, price: number, collectionAddress: `0x${string}`) => {
+    const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/homepage/dashboard/collection/${collectionId}/sell`, {
+        method: "PATCH",
+        mode: "cors",
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Address': address,
+        },
+        body: JSON.stringify({ price, collectionAddress }),
+    });
+    const data = await response.json();
+    return data.data;
+}
+
 export {
     login,
     logout,
@@ -119,4 +163,7 @@ export {
     createCollection,
     searchCollections,
     searchCollectionsByCategory,
+    getCollectionDetails,
+    createFlashcard,
+    updateCollectionSellingPrice,
 };

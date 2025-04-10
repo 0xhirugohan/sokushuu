@@ -40,9 +40,10 @@ const SearchInput = ({ setToggleOff, setSearchQuery, searchQuery, onSubmit }: { 
 interface TitleProps {
     searchQueryProps?: string;
     collectionSlugProps?: string;
+    text?: string
 }
 
-const Title: React.FC<TitleProps> = ({ searchQueryProps, collectionSlugProps }: TitleProps) => {
+const Title: React.FC<TitleProps> = ({ searchQueryProps, collectionSlugProps, text }: TitleProps) => {
     const navigate = useNavigate();
 
     const [toggleSearch, setToggleSearch] = useState(false);
@@ -69,6 +70,10 @@ const Title: React.FC<TitleProps> = ({ searchQueryProps, collectionSlugProps }: 
 
     if (collectionSlugProps) {
         titleText = collectionSlugProps;
+    }
+
+    if (text) {
+        titleText = text;
     }
 
     return <div className="flex justify-between">
