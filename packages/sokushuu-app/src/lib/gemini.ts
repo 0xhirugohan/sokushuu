@@ -28,7 +28,7 @@ interface GenerateContentResponse {
 const generateContent = async (content: string) : Promise<GenerateContentResponse> => {
     const apiUrl = import.meta.env.VITE_API_URL
     const response = await fetch(
-        `${apiUrl}/llm/generate`,
+        `${apiUrl}/chat/wallet/message`,
         {
             method: "POST",
             headers: {
@@ -40,7 +40,8 @@ const generateContent = async (content: string) : Promise<GenerateContentRespons
         }
     )
     const data = await response.json()
-    const { candidates, usageMetadata, modelVersion } = data;
+    const { candidates, usageMetadata, modelVersion } = data.data;
+    console.log({ candidates, usageMetadata, modelVersion })
     return { candidates, usageMetadata, modelVersion };
 }
 

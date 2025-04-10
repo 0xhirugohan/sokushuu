@@ -1,6 +1,9 @@
 import { Context, Hono } from "hono";
 import { setCookie, getCookie, deleteCookie } from "hono/cookie";
+import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
+
+import { generateChatCompletion } from "./utils/gemini";
 
 const app = new Hono();
 
@@ -26,6 +29,10 @@ const authMiddleware = createMiddleware<AuthMiddlewareContext>(async (c, next) =
 	c.set("address", address);
 	await next();
 });
+
+app.use("*", cors({
+	origin: ["http://localhost:5173", "https://sokushuu.de", "https://app.sokushuu.de"]
+}));
 
 app.get("/", (c) => c.json({ message: "Welcome to Sokushuu API 0.1.0" }));
 
@@ -54,18 +61,22 @@ app.post("/auth/logout", authMiddleware, async (c) => {
  */
 
 // get 10 messages history from the wallet address
-app.get("/chat/wallet/:address/history", authMiddleware, (c) => {
-	const { address } = c.req.param();
+app.get("/chat/wallet/history", authMiddleware, (c) => {
+	const address = c.get("address");
 	const histories: string[] = [];
 	return c.json({ data: histories });
 });
 
 // send a message from a wallet address
-app.post("/chat/wallet/:address/message", authMiddleware, async (c) => {
-	const { address } = c.req.param();
-	const { message } = await c.req.json();
+app.post("/chat/wallet/message", async (c) => {
+	// const address = c.get("address");
+	const address = "0x0000000000000000000000000000000000000000";
+	const { content } = await c.req.json();
+
+	const { candidates, usageMetadata, modelVersion } = await generateChatCompletion(c, content);
+
 	c.status(201);
-	return c.json({ data: { address, message } });
+	return c.json({ data: { address, content, candidates, usageMetadata, modelVersion } });
 });
 
 /**
