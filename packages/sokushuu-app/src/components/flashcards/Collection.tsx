@@ -9,7 +9,7 @@ interface CollectionProps {
 }
 
 interface IFlashcard {
-    flashcardId: string;
+    flashcardId: number;
     front: string;
     back: string;
 }

@@ -7,10 +7,11 @@ type Collection = {
 }
 
 interface ICollection {
-    collectionId: string;
+    collectionId: number;
     name: string;
     creator: string;
     sellingPrice: number;
+    address?: string;
 }
 
 interface CollectionCardProps {

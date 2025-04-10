@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { Outlet } from "react-router";
 import { ChatMenu } from "./layouts/ChatMenu";
 import { Sidebar, Navbar } from "./layouts/Sidebar";
 
-const Layout = () => {
+const Layout: React.FC = () => {
     const [isChatOpen, setIsChatOpen] = useState(false);
 
     const toggleAIChat = () => setIsChatOpen(!isChatOpen);

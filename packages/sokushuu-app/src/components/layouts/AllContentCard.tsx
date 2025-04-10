@@ -46,10 +46,10 @@ const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, clas
         }
 
         try {
-            const { contractAddress, registerHash } = await deployERC721(sellPrice);
+            const { contractAddress } = await deployERC721(sellPrice);
             setIsOnSale(true);
 
-            await updateCollectionSellingPrice(parseInt(collectionMetadata?.collectionId ?? "0"), sellPrice, contractAddress);
+            await updateCollectionSellingPrice(collectionMetadata?.collectionId ?? 0, sellPrice, contractAddress);
 
             closeForm();
         } catch (error) {
@@ -176,13 +176,12 @@ interface AllContentCardProps {
     flashcards?: IFlashcard[];
 }
 
-const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collectionTitle, collectionMetadata, flashcards }) => {
+const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collectionMetadata, flashcards }) => {
     const [userAddress, setUserAddress] = useState<string | undefined>();
     const [isUserOwned, setIsUserOwned] = useState(false);
     const [isUserPurchased, setIsUserPurchased] = useState(false);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isSellFormOpen, setIsSellFormOpen] = useState(false);
-    const [selectedCardIndex, setSelectedCardIndex] = useState(0);
     const [selectedCard, setSelectedCard] = useState<IFlashcard | undefined>();
     const [isOnSale, setIsOnSale] = useState(false);
 
@@ -207,7 +206,6 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collect
     }
 
     const handleFormOpen = (cardIndex: number) => {
-        setSelectedCardIndex(cardIndex);
         const selectedFc = flashcards?.filter(flashcard => flashcard.flashcardId === cardIndex)[0];
         setSelectedCard(selectedFc);
         setIsFormOpen(true);
@@ -257,7 +255,7 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collect
                 <ContentCard openForm={() => handleFormOpen(flashcard?.flashcardId)} key={flashcard.flashcardId} front={flashcard.front} back={flashcard.back} />
             ))}
         </div>
-        { isFormOpen && <ContentCardForm collectionId={parseInt(collectionMetadata?.collectionId ?? "0")} isOwner={isUserOwned} front={selectedCard?.front ?? ''} back={selectedCard?.back ?? ''} closeForm={handleFormClose} /> }
+        { isFormOpen && <ContentCardForm collectionId={collectionMetadata?.collectionId ?? 0} isOwner={isUserOwned} front={selectedCard?.front ?? ''} back={selectedCard?.back ?? ''} closeForm={handleFormClose} /> }
         { isSellFormOpen && <SellCollectionForm closeForm={handleSellFormClose} collectionMetadata={collectionMetadata ?? null} /> }
     </>
 }

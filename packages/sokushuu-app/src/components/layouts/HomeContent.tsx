@@ -9,10 +9,11 @@ import PlusIcon from "@/assets/plus.svg";
 import { getDashboard } from "@/lib/api";
 
 interface ICollection {
-    collectionId: string;
+    collectionId: number;
     name: string;
     creator: string;
     sellingPrice: number;
+    address?: string;
 }
 interface HomeContentProps {
     showCreateCollectionPopup: () => void;
@@ -31,10 +32,12 @@ const HomeContent: React.FC<HomeContentProps> = ({ showCreateCollectionPopup }: 
         name: "Explore"
     }
 
+    /*
     const recentlyViewedCollection = {
         slug: "recently-viewed",
         name: "Recently Viewed"
     }
+    */
 
     const recentlyCreatedCollection = {
         slug: "recently-created",

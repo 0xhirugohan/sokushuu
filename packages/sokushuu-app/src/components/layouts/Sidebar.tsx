@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router';
-import type { BrowserProvider, EIP1193Provider, Eip1193Provider } from 'viem';
+import type { EIP1193Provider } from 'viem';
 
 import { getAddressBalance, walletClient } from '@/lib/wallet';
 import { educhainTestnet } from '@/lib/chain';
@@ -17,7 +17,7 @@ import CopyIcon from '@/assets/copy.svg'
 
 declare global {
     interface Window {
-        ethereum: EIP1193Provider & BrowserProvider;
+        ethereum: EIP1193Provider;
     }
 }
 
