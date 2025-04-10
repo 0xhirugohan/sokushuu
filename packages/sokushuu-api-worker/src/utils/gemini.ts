@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { env } from "hono/adapter";
 
 interface GenerateChatCompletionResponse {
-    candidates: string[];
+    candidates: { content: { parts: { text: string }[] } }[];
     usageMetadata: {
         promptTokenCount: number;
         completionTokenCount: number;

@@ -21,7 +21,6 @@ interface AuthMiddlewareContext extends Context {
 
 const authMiddleware = createMiddleware<AuthMiddlewareContext>(async (c, next) => {
 	const address = c.req.header("X-Address");
-	console.log({ address });
 	if (!address) {
 		c.status(401);
 		return c.json({ error: "Unauthorized" });
@@ -60,10 +59,14 @@ app.post("/auth/logout", authMiddleware, async (c) => {
  */
 
 // get 10 messages history from the wallet address
-app.get("/chat/wallet/history", authMiddleware, (c) => {
+app.get("/chat/wallet/history", authMiddleware, async (c) => {
 	const address = c.get("address");
-	const histories: string[] = [];
-	return c.json({ data: histories });
+
+	const { results } = await c.env.DB.prepare(
+		"SELECT Message as message, IsUser as isUser, CreatedAt as timestamp FROM Messages WHERE Address = ? LIMIT 10"
+	).bind(address).all();
+
+	return c.json({ data: results });
 });
 
 // send a message from a wallet address
@@ -72,6 +75,27 @@ app.post("/chat/wallet/message", authMiddleware, async (c) => {
 	const { content } = await c.req.json();
 
 	const { candidates, usageMetadata, modelVersion } = await generateChatCompletion(c, content);
+
+	const chatResponse: string[] = [];
+	for (const candidate of candidates) {
+		for (const part of candidate.content.parts) {
+			chatResponse.push(part.text);
+		}
+	}
+
+	// insert 2 times, one for the user and one for the AI
+	const { success } = await c.env.DB.prepare(
+		"INSERT INTO Messages (Message, Address, IsUser) VALUES (?, ?, ?), (?, ?, ?)"
+	).bind(
+		content,
+		address,
+		true,
+		chatResponse.join("\n"),
+		address,
+		false
+	).run();
+
+	// for now will ignore if message is not sotred in the database
 
 	c.status(201);
 	return c.json({ data: { address, content, candidates, usageMetadata, modelVersion } });
