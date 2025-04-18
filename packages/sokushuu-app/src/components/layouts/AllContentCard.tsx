@@ -1,6 +1,7 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router";
+import { useAccount } from "wagmi";
 
 import { buyAndMintNFT, deployNFTContract, registerDeployedNFTContract, checkIfUserHasNFT } from "@/lib/wallet";
 import { createFlashcard, updateCollectionSellingPrice } from "@/lib/api";
@@ -20,6 +21,7 @@ interface ContentCardFormProps {
     front: string;
     back: string;
     closeForm: () => void;
+    onSubmitSuccess: (date: Date) => void;
     className?: string;
 }
 
@@ -91,7 +93,7 @@ const SellCollectionForm: React.FC<SellCollectionFormProps> = ({ closeForm, clas
     </div>
 }
 
-const ContentCardForm: React.FC<ContentCardFormProps> = ({ isOwner, collectionId, front, back, closeForm: closeFormProp, className }) => {
+const ContentCardForm: React.FC<ContentCardFormProps> = ({ isOwner, collectionId, front, back, closeForm: closeFormProp, className, onSubmitSuccess }) => {
     const [frontValue, setFrontValue] = useState(front);
     const [backValue, setBackValue] = useState(back);
 
@@ -108,6 +110,8 @@ const ContentCardForm: React.FC<ContentCardFormProps> = ({ isOwner, collectionId
         }
 
         await createFlashcard(collectionId, frontValue, backValue);
+
+        onSubmitSuccess(new Date());
 
         closeFormProp();
     }
@@ -134,7 +138,7 @@ const ContentCardForm: React.FC<ContentCardFormProps> = ({ isOwner, collectionId
             </div>
             <div className="flex justify-end gap-x-2">
                 <button onClick={closeFormProp} type="button" className="p-2 rounded-lg border-2 border-zinc-600 cursor-pointer">Cancel</button>
-                { isOwner && collectionId === 0 && <button onClick={onSubmit} type="submit" className="p-2 rounded-lg border-2 border-zinc-600 cursor-pointer">Save</button> }
+                { isOwner && collectionId !== 0 && <button onClick={onSubmit} type="submit" className="p-2 rounded-lg border-2 border-zinc-600 cursor-pointer">Save</button> }
             </div>
         </div>
     </div>
@@ -174,9 +178,11 @@ interface AllContentCardProps {
     collectionTitle?: string;
     collectionMetadata?: ICollection;
     flashcards?: IFlashcard[];
+    setRefreshDate: (date: Date) => void;
 }
 
-const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collectionMetadata, flashcards }) => {
+const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collectionMetadata, flashcards, setRefreshDate: setRefreshDateProp }) => {
+    const { address } = useAccount();
     const [userAddress, setUserAddress] = useState<string | undefined>();
     const [isUserOwned, setIsUserOwned] = useState(false);
     const [isUserPurchased, setIsUserPurchased] = useState(false);
@@ -184,11 +190,11 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collect
     const [isSellFormOpen, setIsSellFormOpen] = useState(false);
     const [selectedCard, setSelectedCard] = useState<IFlashcard | undefined>();
     const [isOnSale, setIsOnSale] = useState(false);
+    const [refreshDate, setRefreshDate] = useState(new Date());
 
     useEffect(() => {
-        const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
         setUserAddress(address);
-        setIsUserOwned(collectionMetadata?.creator === userAddress);
+        setIsUserOwned(collectionMetadata?.creator === address);
         setIsOnSale((collectionMetadata?.sellingPrice ?? 0) > 0 && collectionMetadata?.address !== null);
 
         const checkIfUserHasNFTCall = async () => {
@@ -198,7 +204,12 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collect
         if (collectionMetadata?.address !== null) {
             checkIfUserHasNFTCall();
         }
-    }, [collectionMetadata, userAddress]);
+    }, [collectionMetadata, userAddress, address]);
+
+    useEffect(() => {
+        // refresh flashcard
+        setRefreshDateProp(refreshDate);
+    }, [refreshDate]);
 
     const handleBuy = async () => {
         const hash = await buyAndMintNFT(collectionMetadata?.address as `0x${string}` ?? "0x", collectionMetadata?.sellingPrice ?? 0);
@@ -221,6 +232,10 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collect
 
     const handleSellFormClose = () => {
         setIsSellFormOpen(false);
+    }
+
+    const handleOnFlashcardSubmitSuccess = (date: Date) => {
+        setRefreshDate(date);
     }
 
     return <>
@@ -255,7 +270,7 @@ const AllContentCard: React.FC<AllContentCardProps> = ({ collectionSlug, collect
                 <ContentCard openForm={() => handleFormOpen(flashcard?.flashcardId)} key={flashcard.flashcardId} front={flashcard.front} back={flashcard.back} />
             ))}
         </div>
-        { isFormOpen && <ContentCardForm collectionId={collectionMetadata?.collectionId ?? 0} isOwner={isUserOwned} front={selectedCard?.front ?? ''} back={selectedCard?.back ?? ''} closeForm={handleFormClose} /> }
+        { isFormOpen && <ContentCardForm onSubmitSuccess={handleOnFlashcardSubmitSuccess} collectionId={collectionMetadata?.collectionId ?? 0} isOwner={isUserOwned} front={selectedCard?.front ?? ''} back={selectedCard?.back ?? ''} closeForm={handleFormClose} /> }
         { isSellFormOpen && <SellCollectionForm closeForm={handleSellFormClose} collectionMetadata={collectionMetadata ?? null} /> }
     </>
 }

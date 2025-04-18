@@ -17,6 +17,7 @@ interface IFlashcard {
 const Collection: React.FC<CollectionProps> = ({ slug }) => {
     const [collectionMetadata, setCollectionMetadata] = useState<ICollection | undefined>();
     const [flashcards, setFlashcards] = useState<IFlashcard[]>([]);
+    const [refreshDate, setRefreshDate] = useState(new Date());
 
     const getCollectionData = async () => {
         const collection = await getCollectionDetails(slug);
@@ -30,9 +31,9 @@ const Collection: React.FC<CollectionProps> = ({ slug }) => {
             setFlashcards(collection.flashcards);
         }
         fetchCollectionData();
-    }, []);
+    }, [refreshDate]);
 
-    return <FlashcardMenu collectionSlug={slug} collectionMetadata={collectionMetadata} flashcards={flashcards} />
+    return <FlashcardMenu setRefreshDate={setRefreshDate} collectionSlug={slug} collectionMetadata={collectionMetadata} flashcards={flashcards} />
 }
 
 export { Collection };  

@@ -17,6 +17,10 @@ const ChatInput = ({ className, onMessageSent }: { className?: string, onMessage
     }
 
     const sendMessage = async () => {
+        if (errorMessage) {
+            setErrorMessage("");
+        }
+
         if (isLoading) return;
 
         try {
