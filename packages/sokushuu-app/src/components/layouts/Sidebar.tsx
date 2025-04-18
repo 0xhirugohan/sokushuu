@@ -2,6 +2,8 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router';
 import type { EIP1193Provider } from 'viem';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { injected } from 'wagmi/connectors';
 
 import { getAddressBalance, walletClient } from '@/lib/wallet';
 import { educhainTestnet } from '@/lib/chain';
@@ -15,11 +17,13 @@ import AiChatIcon from '@/assets/ai-chat.svg'
 import WalletIcon from '@/assets/wallet.svg'
 import CopyIcon from '@/assets/copy.svg'
 
+/*
 declare global {
     interface Window {
         ethereum: EIP1193Provider;
     }
 }
+*/
 
 interface WalletPopupProps {
     address: `0x${string}`;
@@ -27,14 +31,19 @@ interface WalletPopupProps {
 }
 
 const WalletPopup: React.FC<WalletPopupProps> = ({ address, balance }) => {
+    const { disconnectAsync } = useDisconnect();
     const copyAddress = () => {
         navigator.clipboard.writeText(address);
     }
 
     const logout = async () => {
+        await disconnectAsync();
+
         await apiLogout();
+        /*
         document.cookie = 'address=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         window.location.reload();
+        */
     }
 
     return <div className="bg-zinc-100 absolute bottom-16 w-[28vw] text-sm border-2 border-zinc-600 rounded-md p-2 z-10">
@@ -56,18 +65,24 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ toggleAIChat, isAIChatOpen, styleName }: SidebarProps) => {
-    const [address, setAddress] = useState<`0x${string}` | null>(null);
+    // const [address, setAddress] = useState<`0x${string}` | null>(null);
+    const { connect } = useConnect();
+    const { address } = useAccount();
+
     const [balance, setBalance] = useState<string>('0');
     const [showWalletPopup, setShowWalletPopup] = useState<boolean>(false);
 
+    /*
     useEffect(() => {
         const addressInCookie = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
         if (addressInCookie) {
             setAddress(addressInCookie as `0x${string}`);
         }
     }, []);
+    */
 
     const connectWallet = async () => {
+        /*
         const [walletAddress] = await walletClient.requestAddresses();
         setAddress(walletAddress);
 
@@ -75,8 +90,12 @@ const Sidebar: React.FC<SidebarProps> = ({ toggleAIChat, isAIChatOpen, styleName
         if (userChainId !== educhainTestnet.id) {
             await walletClient.addChain({ chain: educhainTestnet });
         }
+        */
 
-        await login(walletAddress);
+
+        connect({ connector: injected() });
+
+        // await login(address as string);
     };
 
     const walletPopupClick = async () => {

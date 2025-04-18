@@ -6,6 +6,7 @@ import {
     formatEther,
     parseEther,
 } from 'viem';
+import { http as httpWagmi, createConfig } from 'wagmi';
 
 import { educhainTestnet } from './chain';
 import { wagmiAbi, wagmiBytecode } from './abi/CollectionOwnershipNFT';
@@ -19,6 +20,13 @@ export const walletClient = createWalletClient({
 export const publicClient = createPublicClient({
     chain: educhainTestnet,
     transport: http(),
+});
+
+export const wagmiConfig = createConfig({
+    chains: [educhainTestnet],
+    transports: {
+        [educhainTestnet.id]: httpWagmi(),
+    }
 });
 
 export const getAddressBalance = async (address: `0x${string}`) => {

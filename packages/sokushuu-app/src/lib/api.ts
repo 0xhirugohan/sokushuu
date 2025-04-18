@@ -1,4 +1,7 @@
 import type { IChatHistory } from "@/components/layouts/ChatMenu";
+import { getAccount } from "@wagmi/core";
+
+import { wagmiConfig } from "./wallet";
 
 const login = async (address: string) => {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
@@ -15,13 +18,14 @@ const login = async (address: string) => {
 }
 
 const logout = async () => {
-    const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
+    // const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
+    const { address } = getAccount(wagmiConfig);
     const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
         method: "POST",
         mode: "cors",
         headers: {
             'Content-Type': 'application/json',
-            'X-Address': address,
+            'X-Address': address as string,
         },  
     });
     return response.json();
@@ -55,13 +59,14 @@ interface IDashboard {
 }
 
 const getDashboard = async (): Promise<IDashboard> => {
-    const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
+    const { address } = getAccount(wagmiConfig);
+    // const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
     const response = await fetch(`${import.meta.env.VITE_API_URL}/homepage/dashboard`, {
         method: "GET",
         mode: "cors",
         headers: {
             'Content-Type': 'application/json',
-            'X-Address': address,
+            'X-Address': address as string,
         },
     });
     const data = await response.json();
