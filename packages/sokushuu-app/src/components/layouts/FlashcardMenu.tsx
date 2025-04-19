@@ -29,7 +29,7 @@ interface FlashcardMenuProps {
     categoryId?: string;
     collectionMetadata?: ICollection;
     flashcards?: IFlashcard[];
-    setRefreshDate: (date: Date) => void;
+    setRefreshDate?: (date: Date) => void;
 }
 
 const FlashcardMenu: React.FC<FlashcardMenuProps> = ({ styleName, searchQueryProps, collectionSlug, categoryId, collectionMetadata, flashcards, setRefreshDate }) => {

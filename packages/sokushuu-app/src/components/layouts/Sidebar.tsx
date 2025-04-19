@@ -1,10 +1,10 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useBalance, useConnect, useDisconnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
+import { formatEther } from 'viem';
 
-import { getAddressBalance } from '@/lib/wallet';
 import { logout as apiLogout } from '@/lib/api';
 
 import SokushuuLogo from '@/assets/sokushuu.svg'
@@ -17,11 +17,21 @@ import CopyIcon from '@/assets/copy.svg'
 
 interface WalletPopupProps {
     address: `0x${string}`;
-    balance: string;
 }
 
-const WalletPopup: React.FC<WalletPopupProps> = ({ address, balance }) => {
+const WalletPopup: React.FC<WalletPopupProps> = ({ address }) => {
     const { disconnectAsync } = useDisconnect();
+    const { data: balanceData } = useBalance({ address });
+    const [balanceState, setBalanceState] = useState("0");
+
+    useEffect(() => {
+        if (!balanceData) {
+            return;
+        }
+
+        setBalanceState(formatEther(balanceData.value));
+    }, [balanceData]);
+
     const copyAddress = () => {
         navigator.clipboard.writeText(address);
     }
@@ -39,7 +49,7 @@ const WalletPopup: React.FC<WalletPopupProps> = ({ address, balance }) => {
                 <img className="w-4 h-4" src={CopyIcon} alt="Copy Icon" />
             </button>
         </div>
-        <p>Balance: {balance}</p>
+        {balanceState && <p>Balance: {balanceState}</p> }
         <button className="mt-4 border-2 border-zinc-600 rounded-md p-2" onClick={logout}>Logout</button>
     </div>
 }
@@ -54,7 +64,6 @@ const Sidebar: React.FC<SidebarProps> = ({ toggleAIChat, isAIChatOpen, styleName
     const { connect } = useConnect();
     const { address } = useAccount();
 
-    const [balance, setBalance] = useState<string>('0');
     const [showWalletPopup, setShowWalletPopup] = useState<boolean>(false);
 
     const connectWallet = async () => {
@@ -70,8 +79,6 @@ const Sidebar: React.FC<SidebarProps> = ({ toggleAIChat, isAIChatOpen, styleName
         }
 
         setShowWalletPopup(true);
-        const balance = await getAddressBalance(address);
-        setBalance(balance);
     }
 
     return <div className={`${styleName} w-28 h-full border-2 border-zinc-600 rounded-md p-2`}>
@@ -96,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ toggleAIChat, isAIChatOpen, styleName
                         alt="user avatar"
                         />
                 </button>
-                {showWalletPopup && <WalletPopup address={address} balance={balance} />}
+                {showWalletPopup && <WalletPopup address={address} />}
             </div> : <button onClick={connectWallet} type="button" className="mb-4 bg-transparent border-none hover:bg-transparent active:bg-transparent shadow-none cursor-pointer">
                 <img className="w-8 h-8 hover:opacity-70" src={WalletIcon} alt="Wallet Icon" />
             </button>}

@@ -18,9 +18,13 @@ interface CollectionCardProps {
     collection: Collection;
     collections: ICollection[];
     chatOpen: boolean;
+    onCreateCollection?: () => void;
 }
 
-const CollectionCard: React.FC<CollectionCardProps> = ({ collection, collections, chatOpen }) => {
+const CollectionCard: React.FC<CollectionCardProps> = ({ collection, collections, chatOpen, onCreateCollection }) => {
+    const handleCreateCollection = () => {
+        onCreateCollection?.();
+    };
     return <div className="w-full flex flex-col gap-y-2">
         <div className="font-semibold">{collection.name}</div>
         <div className={`${chatOpen ? 'max-w-[56vw]' : 'max-w-[82vw]'} overflow-x-scroll`}>
@@ -29,7 +33,7 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection, collections
                     collections.map((collection) => (
                         <NavLink
                             to={`/collection/${collection.collectionId}`}
-                            className="h-full w-[32vw] md:w-[20vw] rounded-lg border-2 border-zinc-500 flex justify-center items-center"
+                            className="h-full w-[32vw] md:w-[20vw] rounded-lg border-2 border-zinc-500 flex justify-center items-center text-center"
                         >
                             {collection.name}
                         </NavLink>
@@ -41,6 +45,14 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection, collections
                 >
                     See more
                 </NavLink>
+                { collection.slug === 'recently-created' && 
+                    <button
+                        onClick={handleCreateCollection}
+                        className="h-full w-[32vw] md:w-[20vw] rounded-lg border-2 border-zinc-500 flex justify-center items-center"
+                    >
+                        Create New Collection
+                    </button>
+                }
             </div>
         </div>
     </div>
