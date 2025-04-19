@@ -59,7 +59,7 @@ const HomeContent: React.FC<HomeContentProps> = ({ showCreateCollectionPopup }: 
         <CollectionCard collection={exploreCollection} collections={exploreCollections} chatOpen={chatOpen} />
         {/* hasViewedCollection && <CollectionCard collection={recentlyViewedCollection} chatOpen={chatOpen} /> */}
         { recentlyCreatedCollections.length > 0 ? 
-            <CollectionCard collection={recentlyCreatedCollection} collections={recentlyCreatedCollections} chatOpen={chatOpen} />
+            <CollectionCard collection={recentlyCreatedCollection} collections={recentlyCreatedCollections} chatOpen={chatOpen} onCreateCollection={showCreateCollectionPopup} />
             : <button onClick={showCreateCollectionPopup} type="button" className="h-20 md:h-40 border-2 border-zinc-500 rounded-lg flex gap-x-6 items-center justify-center cursor-pointer">
                 <span className="text-2xl">Create New</span>
                 <img className="p-1 w-12 h-12 md:w-16 md:h-16 border-2 border-zinc-500 rounded-full" src={PlusIcon} alt="plus" />

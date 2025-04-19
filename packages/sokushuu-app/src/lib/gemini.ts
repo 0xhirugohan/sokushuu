@@ -1,3 +1,7 @@
+import { getAccount } from "@wagmi/core";
+
+import { wagmiConfig } from "./wallet";
+
 interface UsageMetadata {
     promptTokenCount: number;
     candidatesTokenCount: number;
@@ -26,8 +30,9 @@ interface GenerateContentResponse {
 }
 
 const generateContent = async (content: string) : Promise<GenerateContentResponse> => {
+    const { address } = getAccount(wagmiConfig);
+
     const apiUrl = import.meta.env.VITE_API_URL
-    const address = document.cookie.split('; ').find(row => row.startsWith('address='))?.split('=')[1] ?? '';
     const response = await fetch(
         `${apiUrl}/chat/wallet/message`,
         {
@@ -35,7 +40,7 @@ const generateContent = async (content: string) : Promise<GenerateContentRespons
             mode: "cors",
             headers: {
                 'Content-Type': 'application/json',
-                'X-Address': address,
+                'X-Address': address as string,
             },
             body: JSON.stringify({
                 content

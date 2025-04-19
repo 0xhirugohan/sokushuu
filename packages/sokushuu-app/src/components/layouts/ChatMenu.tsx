@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useAccountEffect, useAccount } from "wagmi";
 
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatHistory } from "@/components/chat/ChatHistory";
@@ -12,7 +13,9 @@ interface IChatHistory {
 }
 
 const ChatMenu = ({ className }: { className?: string }) => {
+    const { address } = useAccount();
     const [chatHistories, setChatHistories] = useState<IChatHistory[]>([]);
+    const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(!!address);
 
     useEffect(() => {
         const fetchChatHistory = async () => {
@@ -22,9 +25,22 @@ const ChatMenu = ({ className }: { className?: string }) => {
         fetchChatHistory();
     }, []);
 
+    useAccountEffect({
+        onConnect() {
+            setIsUserLoggedIn(true);
+        },
+        onDisconnect() {
+            setIsUserLoggedIn(false);
+        },
+    })
+
     const handleMessageSent = (messages: IChatHistory[]) => {
         const newChatHistories = [...chatHistories, ...messages];
         setChatHistories(newChatHistories);
+    }
+
+    if (!isUserLoggedIn) {
+        return <div className="h-full flex justify-center items-center">Please login to continue</div>
     }
 
     return <div className={`${className} h-full relative`}>

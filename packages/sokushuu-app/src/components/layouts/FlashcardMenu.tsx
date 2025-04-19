@@ -29,9 +29,10 @@ interface FlashcardMenuProps {
     categoryId?: string;
     collectionMetadata?: ICollection;
     flashcards?: IFlashcard[];
+    setRefreshDate?: (date: Date) => void;
 }
 
-const FlashcardMenu: React.FC<FlashcardMenuProps> = ({ styleName, searchQueryProps, collectionSlug, categoryId, collectionMetadata, flashcards }) => {
+const FlashcardMenu: React.FC<FlashcardMenuProps> = ({ styleName, searchQueryProps, collectionSlug, categoryId, collectionMetadata, flashcards, setRefreshDate }) => {
     const [isCreateCollectionPopupOpen, setIsCreateCollectionPopupOpen] = useState(false);
     const [collections, setCollections] = useState<ICollection[]>([]);
 
@@ -74,7 +75,7 @@ const FlashcardMenu: React.FC<FlashcardMenuProps> = ({ styleName, searchQueryPro
         { !searchQueryProps && !collectionSlug && !categoryId && <Title /> }
 
         { (searchQueryProps || categoryId) && <AllCollection collections={collections} /> }
-        { collectionSlug && <AllContentCard collectionSlug={collectionSlug} flashcards={flashcards} collectionMetadata={collectionMetadata} /> }
+        { collectionSlug && <AllContentCard setRefreshDate={setRefreshDate} collectionSlug={collectionSlug} flashcards={flashcards} collectionMetadata={collectionMetadata} /> }
         { !searchQueryProps && !collectionSlug && !categoryId && <HomeContent showCreateCollectionPopup={showCreateCollectionPopup} /> }
         { isCreateCollectionPopupOpen && <CreateCollectionPopup onClose={closeCreateCollectionPopup} /> }
     </div>
